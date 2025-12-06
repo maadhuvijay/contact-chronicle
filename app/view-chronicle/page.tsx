@@ -128,6 +128,43 @@ export default function ViewChroniclePage() {
     setNotes({ ...notes, [contactId]: note });
   };
 
+  const exportToCSV = () => {
+    // CSV headers
+    const headers = ['Name', 'Company', 'Role', 'Date Added', 'Source', 'Notes'];
+    
+    // Convert contacts to CSV rows
+    const csvRows = [
+      headers.join(','), // Header row
+      ...filteredContacts.map((contact) => {
+        const row = [
+          `"${contact.name.replace(/"/g, '""')}"`,
+          `"${contact.company.replace(/"/g, '""')}"`,
+          `"${contact.role.replace(/"/g, '""')}"`,
+          `"${contact.dateAdded.replace(/"/g, '""')}"`,
+          `"${contact.source.replace(/"/g, '""')}"`,
+          `"${(notes[contact.id] || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
+        ];
+        return row.join(',');
+      }),
+    ];
+
+    // Create CSV content
+    const csvContent = csvRows.join('\n');
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `contacts_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6">
@@ -279,13 +316,21 @@ export default function ViewChroniclePage() {
               <h2 className="text-xl font-semibold text-[#305669]">
                 Contacts
               </h2>
-              <input
-                type="text"
-                placeholder="Search by name..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] w-64"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Search by name..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] w-64"
+                />
+                <button
+                  onClick={exportToCSV}
+                  className="px-4 py-2 bg-[#8ABEB9] text-white rounded-md hover:bg-[#7aada8] transition-colors font-semibold text-sm whitespace-nowrap"
+                >
+                  Export CSV
+                </button>
+              </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">

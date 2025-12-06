@@ -154,3 +154,13 @@ Lint results
 
 ---
 
+
+Updated the navigation bar:
+
+1. Increased font size: `text-xs sm:text-sm` → `text-sm sm:text-base`
+2. Set to bold: `font-medium` → `font-bold`
+
+Navigation links are now larger and bold. Changes apply on both mobile and desktop. Refresh the app to see the update.
+
+---
+
