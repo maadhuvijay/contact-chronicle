@@ -192,8 +192,11 @@ export default function UploadContactsPage() {
                     <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm">First Name</th>
                     <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm">Last Name</th>
                     <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm">Email</th>
-                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm">Phone</th>
-                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm">LinkedIn</th>
+                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm">Phone Number</th>
+                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm">LinkedIn Profile</th>
+                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm">Date added</th>
+                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm">Date Edited</th>
+                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm">Source</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -204,6 +207,9 @@ export default function UploadContactsPage() {
                       <td className="py-2 px-4 text-sm">{contact.email || '-'}</td>
                       <td className="py-2 px-4 text-sm">{contact.phone || '-'}</td>
                       <td className="py-2 px-4 text-sm">{contact.linkedIn || '-'}</td>
+                      <td className="py-2 px-4 text-sm">{contact.dateAdded || '-'}</td>
+                      <td className="py-2 px-4 text-sm">{contact.dateEdited || '-'}</td>
+                      <td className="py-2 px-4 text-sm">{contact.source || '-'}</td>
                     </tr>
                   ))}
                 </tbody>

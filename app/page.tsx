@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Home() {
   return (
@@ -30,6 +31,15 @@ export default function Home() {
           >
             View Chronicle
           </Link>
+        </div>
+        <div className="mt-12 flex justify-center">
+          <Image
+            src="/logo.png"
+            alt="Contact Chronicle Logo"
+            width={300}
+            height={300}
+            className="object-contain"
+          />
         </div>
       </div>
     </div>
