@@ -34,7 +34,7 @@ export default function Navigation() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
+                className={`px-3 sm:px-4 py-2 rounded-md text-sm sm:text-base font-bold transition-colors ${
                   pathname === item.href
                     ? 'bg-[#8ABEB9] text-white'
                     : 'text-[#305669] hover:bg-[#B7E5CD] hover:text-[#305669]'
