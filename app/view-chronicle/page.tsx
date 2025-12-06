@@ -328,7 +328,7 @@ export default function ViewChroniclePage() {
                 />
                 <button
                   onClick={exportToCSV}
-                  className="px-4 py-2 bg-[#8ABEB9] text-white rounded-md hover:bg-[#7aada8] transition-colors font-semibold text-sm whitespace-nowrap"
+                  className="px-4 py-2 bg-[#305669] text-white rounded-md hover:bg-[#244a5a] transition-colors font-semibold text-sm whitespace-nowrap"
                 >
                   Export CSV
                 </button>

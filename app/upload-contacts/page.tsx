@@ -229,7 +229,7 @@ export default function UploadContactsPage() {
           </button>
           <button
             onClick={handleCancel}
-            className="px-6 py-3 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors font-semibold"
+            className="px-6 py-3 bg-[#305669] text-white rounded-md hover:bg-[#244a5a] transition-colors font-semibold"
           >
             Cancel
           </button>
