@@ -56,11 +56,11 @@ export default function MyTimelinePage() {
         </p>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+      <div className="bg-white rounded-lg border border-[#896C6C] shadow-sm p-6">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-200">
+              <tr className="border-b border-[#896C6C]">
                 <th className="text-left py-3 px-4 font-semibold text-[#305669]">Month / Year</th>
                 <th className="text-left py-3 px-4 font-semibold text-[#305669]">Key Professional Event</th>
                 <th className="text-left py-3 px-4 font-semibold text-[#305669]">Key Personal Event</th>
@@ -70,14 +70,14 @@ export default function MyTimelinePage() {
             </thead>
             <tbody>
               {timelineRows.map((row) => (
-                <tr key={row.id} className="border-b border-gray-100 hover:bg-gray-50">
+                <tr key={row.id} className="border-b border-[#896C6C] hover:bg-gray-50">
                   <td className="py-3 px-4">
                     <input
                       type="text"
                       placeholder="09/2025"
                       value={row.monthYear}
                       onChange={(e) => updateRow(row.id, 'monthYear', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] focus:border-transparent"
+                      className="w-full px-3 py-2 border border-[#896C6C] rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] focus:border-transparent"
                     />
                   </td>
                   <td className="py-3 px-4">
@@ -86,7 +86,7 @@ export default function MyTimelinePage() {
                       placeholder="e.g. Started Work at IBM"
                       value={row.professionalEvent}
                       onChange={(e) => updateRow(row.id, 'professionalEvent', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] focus:border-transparent"
+                      className="w-full px-3 py-2 border border-[#896C6C] rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] focus:border-transparent"
                     />
                   </td>
                   <td className="py-3 px-4">
@@ -95,7 +95,7 @@ export default function MyTimelinePage() {
                       placeholder="e.g. Had a baby"
                       value={row.personalEvent}
                       onChange={(e) => updateRow(row.id, 'personalEvent', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] focus:border-transparent"
+                      className="w-full px-3 py-2 border border-[#896C6C] rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] focus:border-transparent"
                     />
                   </td>
                   <td className="py-3 px-4">
@@ -104,7 +104,7 @@ export default function MyTimelinePage() {
                       placeholder="e.g. Moved to Newark"
                       value={row.geographicEvent}
                       onChange={(e) => updateRow(row.id, 'geographicEvent', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] focus:border-transparent"
+                      className="w-full px-3 py-2 border border-[#896C6C] rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] focus:border-transparent"
                     />
                   </td>
                   <td className="py-3 px-4">
@@ -131,7 +131,7 @@ export default function MyTimelinePage() {
           </button>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-gray-200">
+        <div className="mt-8 pt-6 border-t border-[#896C6C]">
           <button
             onClick={handleConfirm}
             className="px-6 py-3 bg-[#305669] text-white rounded-md hover:bg-[#244a5a] transition-colors font-semibold"
