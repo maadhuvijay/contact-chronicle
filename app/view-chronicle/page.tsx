@@ -174,41 +174,43 @@ export default function ViewChroniclePage() {
       </div>
 
       {/* Connections Dashboard */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-          <div className="flex justify-between items-start mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Total Contacts</h3>
-            <span className="text-xs text-gray-500">Last 5 Years</span>
-          </div>
-          <p className="text-3xl font-bold text-[#305669]">{metrics.totalContacts.toLocaleString()}</p>
-          <p className="text-xs text-gray-500 mt-1">over across all months</p>
+      <div className="bg-gray-800 rounded-lg p-6 mb-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-white">Connections Dashboard</h2>
+          <span className="text-xs text-gray-400">Last 5 Years</span>
         </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-          <div className="flex justify-between items-start mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Avg/Month</h3>
-            <span className="text-xs text-gray-500">Last 5 Years</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+            <div className="mb-2">
+              <h3 className="text-sm font-medium text-gray-600">Total Contacts</h3>
+            </div>
+            <p className="text-3xl font-bold text-[#305669]">{metrics.totalContacts.toLocaleString()}</p>
+            <p className="text-xs text-gray-500 mt-1">Sum across all months</p>
           </div>
-          <p className="text-3xl font-bold text-[#305669]">{metrics.avgPerMonth}</p>
-          <p className="text-xs text-gray-500 mt-1">mean contacts per month</p>
-        </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-          <div className="flex justify-between items-start mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Peak Month</h3>
-            <span className="text-xs text-gray-500">Last 5 Years</span>
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+            <div className="mb-2">
+              <h3 className="text-sm font-medium text-gray-600">Avg / Month</h3>
+            </div>
+            <p className="text-3xl font-bold text-[#305669]">{metrics.avgPerMonth}</p>
+            <p className="text-xs text-gray-500 mt-1">Mean contacts per month</p>
           </div>
-          <p className="text-3xl font-bold text-[#305669]">{metrics.peakMonth.split(' ')[0]}</p>
-          <p className="text-xs text-gray-500 mt-1">{metrics.peakMonth.split('(')[1]?.replace(')', '')} contacts</p>
-        </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-          <div className="flex justify-between items-start mb-2">
-            <h3 className="text-sm font-medium text-gray-600">High-Activity Months</h3>
-            <span className="text-xs text-gray-500">Last 5 Years</span>
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+            <div className="mb-2">
+              <h3 className="text-sm font-medium text-gray-600">Peak Month</h3>
+            </div>
+            <p className="text-3xl font-bold text-[#305669]">{metrics.peakMonth.split(' ')[0]}</p>
+            <p className="text-xs text-gray-500 mt-1">{metrics.peakMonth.split('(')[1]?.replace(')', '')} contacts</p>
           </div>
-          <p className="text-3xl font-bold text-[#305669]">{metrics.highActivityPercent}%</p>
-          <p className="text-xs text-gray-500 mt-1">of mean monthly volume</p>
+
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+            <div className="mb-2">
+              <h3 className="text-sm font-medium text-gray-600">High-Activity Months</h3>
+            </div>
+            <p className="text-3xl font-bold text-[#305669]">{metrics.highActivityPercent}%</p>
+            <p className="text-xs text-gray-500 mt-1">&gt; median monthly volume</p>
+          </div>
         </div>
       </div>
 
@@ -333,26 +335,26 @@ export default function ViewChroniclePage() {
               </div>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full border-collapse border border-[#456882]">
                 <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm">Name</th>
-                    <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm">Company</th>
-                    <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm">Role</th>
-                    <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm">Date Added</th>
-                    <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm">Source</th>
-                    <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm">Notes</th>
+                  <tr>
+                    <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Name</th>
+                    <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Company</th>
+                    <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Role</th>
+                    <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Date Added</th>
+                    <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Source</th>
+                    <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Notes</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredContacts.map((contact) => (
-                    <tr key={contact.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-3 px-4 text-sm">{contact.name}</td>
-                      <td className="py-3 px-4 text-sm">{contact.company}</td>
-                      <td className="py-3 px-4 text-sm">{contact.role}</td>
-                      <td className="py-3 px-4 text-sm">{contact.dateAdded}</td>
-                      <td className="py-3 px-4 text-sm">{contact.source}</td>
-                      <td className="py-3 px-4">
+                    <tr key={contact.id} className="hover:bg-gray-50">
+                      <td className="py-3 px-4 text-sm border border-[#456882]">{contact.name}</td>
+                      <td className="py-3 px-4 text-sm border border-[#456882]">{contact.company}</td>
+                      <td className="py-3 px-4 text-sm border border-[#456882]">{contact.role}</td>
+                      <td className="py-3 px-4 text-sm border border-[#456882]">{contact.dateAdded}</td>
+                      <td className="py-3 px-4 text-sm border border-[#456882]">{contact.source}</td>
+                      <td className="py-3 px-4 border border-[#456882]">
                         <textarea
                           value={notes[contact.id] || ''}
                           onChange={(e) => updateNote(contact.id, e.target.value)}

@@ -186,30 +186,30 @@ export default function UploadContactsPage() {
               Table View of the Data Uploaded
             </p>
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full border-collapse border border-[#456882]">
                 <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm">First Name</th>
-                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm">Last Name</th>
-                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm">Email</th>
-                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm">Phone Number</th>
-                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm">LinkedIn Profile</th>
-                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm">Date added</th>
-                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm">Date Edited</th>
-                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm">Source</th>
+                  <tr>
+                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">First Name</th>
+                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Last Name</th>
+                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Email</th>
+                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Phone Number</th>
+                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">LinkedIn Profile</th>
+                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Date added</th>
+                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Date Edited</th>
+                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Source</th>
                   </tr>
                 </thead>
                 <tbody>
                   {previewData.map((contact, index) => (
-                    <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-2 px-4 text-sm">{contact.firstName || '-'}</td>
-                      <td className="py-2 px-4 text-sm">{contact.lastName || '-'}</td>
-                      <td className="py-2 px-4 text-sm">{contact.email || '-'}</td>
-                      <td className="py-2 px-4 text-sm">{contact.phone || '-'}</td>
-                      <td className="py-2 px-4 text-sm">{contact.linkedIn || '-'}</td>
-                      <td className="py-2 px-4 text-sm">{contact.dateAdded || '-'}</td>
-                      <td className="py-2 px-4 text-sm">{contact.dateEdited || '-'}</td>
-                      <td className="py-2 px-4 text-sm">{contact.source || '-'}</td>
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="py-2 px-4 text-sm border border-[#456882]">{contact.firstName || '-'}</td>
+                      <td className="py-2 px-4 text-sm border border-[#456882]">{contact.lastName || '-'}</td>
+                      <td className="py-2 px-4 text-sm border border-[#456882]">{contact.email || '-'}</td>
+                      <td className="py-2 px-4 text-sm border border-[#456882]">{contact.phone || '-'}</td>
+                      <td className="py-2 px-4 text-sm border border-[#456882]">{contact.linkedIn || '-'}</td>
+                      <td className="py-2 px-4 text-sm border border-[#456882]">{contact.dateAdded || '-'}</td>
+                      <td className="py-2 px-4 text-sm border border-[#456882]">{contact.dateEdited || '-'}</td>
+                      <td className="py-2 px-4 text-sm border border-[#456882]">{contact.source || '-'}</td>
                     </tr>
                   ))}
                 </tbody>
