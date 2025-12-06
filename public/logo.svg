@@ -1,0 +1,10 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- Letter C - curved shape -->
+  <path d="M 60 20 A 40 40 0 1 1 60 100" fill="none" stroke="#8ABEB9" stroke-width="10" stroke-linecap="round"/>
+  <!-- Letter M in the center - more architectural style -->
+  <path d="M 45 45 L 45 85 L 55 65 L 60 75 L 65 65 L 75 85 L 75 45" fill="#305669" stroke="#305669" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Additional architectural detail on M -->
+  <rect x="47" y="45" width="2" height="8" fill="#305669"/>
+  <rect x="71" y="45" width="2" height="8" fill="#305669"/>
+</svg>
+
