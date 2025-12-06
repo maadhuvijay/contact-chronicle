@@ -91,3 +91,113 @@ Directory: **c:\Users\maadh\Git Local\AI-Accelerator\Week1_sprint\contact-chroni
 
 ---
 
+
+Reading the main page file to understand its structure:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: app/page.tsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Adding the logo below the buttons on the main page, larger than in the navigation.
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: app/page.tsx</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: undefined
+
+```diff
+@@ -1,3 +1,4 @@
+  import Link from 'next/link';
++ import Image from 'next/image';
+  
+  export default function Home() {
+```
+
+**Chunk 2**
+Lines added: 9, lines removed: undefined
+
+```diff
+@@ -32,4 +33,13 @@
+            &lt;/Link&gt;
+          &lt;/div&gt;
++         &lt;div className="mt-12 flex justify-center"&gt;
++           &lt;Image
++             src="/logo.png"
++             alt="Contact Chronicle Logo"
++             width={300}
++             height={300}
++             className="object-contain"
++           /&gt;
++         &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+```
+
+</details>
+
+</tool-use>
+
+---
+
+
+
+---
+
+
+Checking for linting errors:
+
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
+<details>
+          <summary>Tool use: **read_lints** • Read lints for 1 file</summary>
+      
+Lint paths:
+
+- `app/page.tsx`
+
+Lint results
+
+
+**No lint errors found**
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Added the logo below the buttons on the main page. Changes:
+
+1. **Imported the Image component** from Next.js
+2. **Added the logo** below the button section with:
+   - Size: 300x300 pixels (larger than the 40x40 in navigation)
+   - Spacing: `mt-12` margin-top
+   - Centered using flexbox
+   - `object-contain` to preserve aspect ratio
+
+The logo now appears below the three buttons on the main page. The page should display correctly with the larger logo.
+
+---
+
