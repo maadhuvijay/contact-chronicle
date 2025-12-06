@@ -174,7 +174,7 @@ export default function ViewChroniclePage() {
       </div>
 
       {/* Connections Dashboard */}
-      <div className="bg-gray-800 rounded-lg p-6 mb-8">
+      <div className="bg-[#16476A] rounded-lg p-6 mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-white">Connections Dashboard</h2>
           <span className="text-xs text-gray-400">Last 5 Years</span>
