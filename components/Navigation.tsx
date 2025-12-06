@@ -20,7 +20,7 @@ export default function Navigation() {
           <div className="flex items-center mb-3 sm:mb-0">
             <Link href="/" className="flex items-center">
               <Image
-                src="/logo.svg"
+                src="/logo.png"
                 alt="Contact Chronicle Logo"
                 width={40}
                 height={40}
