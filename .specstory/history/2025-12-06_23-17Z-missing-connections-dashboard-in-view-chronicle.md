@@ -517,3 +517,107 @@ The dashboard now matches the image layout with the dark background container an
 
 ---
 
+_**User (2025-12-06 22:24Z)**_
+
+Text "Connections Dashboard" should display in the window showing the summary cards
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Adding the "Connections Dashboard" title to the dashboard section:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: app/view-chronicle/page.tsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: app/view-chronicle/page.tsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Adding the "Connections Dashboard" title to the dashboard section:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: app/view-chronicle/page.tsx</summary>
+
+**Chunk 1**
+Lines added: 2, lines removed: 1
+
+```diff
+@@ -176,5 +176,6 @@
+        {/* Connections Dashboard */}
+        &lt;div className="bg-gray-800 rounded-lg p-6 mb-8"&gt;
+-         &lt;div className="flex justify-end mb-4"&gt;
++         &lt;div className="flex justify-between items-center mb-4"&gt;
++           &lt;h2 className="text-xl font-semibold text-white"&gt;Connections Dashboard&lt;/h2&gt;
+            &lt;span className="text-xs text-gray-400"&gt;Last 5 Years&lt;/span&gt;
+          &lt;/div&gt;
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
+<details>
+          <summary>Tool use: **read_lints** • Read lints for 1 file</summary>
+      
+Lint paths:
+
+- `app/view-chronicle/page.tsx`
+
+Lint results
+
+
+**No lint errors found**
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Added the "Connections Dashboard" title to the dashboard section. It appears at the top of the dark container, with "Last 5 Years" aligned to the right on the same line. The title uses white text to contrast with the dark background.
+
+---
+
