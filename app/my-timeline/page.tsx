@@ -97,14 +97,44 @@ export default function MyTimelinePage() {
     }
   };
 
+  // Parse month_year string to a sortable date
+  const parseMonthYear = (monthYear: string): Date => {
+    if (!monthYear || !monthYear.trim()) {
+      // Return a far future date for invalid/empty dates so they appear at the end
+      return new Date('9999-12-31');
+    }
+    
+    const trimmed = monthYear.trim();
+    const parts = trimmed.split('/');
+    
+    // Handle MM/YYYY format
+    if (parts.length === 2) {
+      const month = parseInt(parts[0], 10) - 1; // Month is 0-indexed in Date
+      const year = parseInt(parts[1], 10);
+      if (!isNaN(month) && !isNaN(year) && month >= 0 && month < 12) {
+        return new Date(year, month, 1);
+      }
+    }
+    
+    // Handle YYYY format
+    if (parts.length === 1 && parts[0].length === 4) {
+      const year = parseInt(parts[0], 10);
+      if (!isNaN(year)) {
+        return new Date(year, 0, 1); // January 1st of that year
+      }
+    }
+    
+    // If parsing fails, return far future date
+    return new Date('9999-12-31');
+  };
+
   // Fetch all timeline rows from Supabase
   const fetchTimelineRows = async () => {
     setIsLoadingTimeline(true);
     try {
       const { data, error } = await supabase
         .from('timeline_rows')
-        .select('*')
-        .order('created_at', { ascending: true });
+        .select('*');
 
       if (error) {
         console.error('Error fetching timeline rows:', error);
@@ -122,7 +152,14 @@ export default function MyTimelinePage() {
         geographicEvent: row.geographic_event || '',
       }));
 
-      setSavedTimelineRows(convertedRows);
+      // Sort chronologically by month_year
+      const sortedRows = convertedRows.sort((a, b) => {
+        const dateA = parseMonthYear(a.monthYear);
+        const dateB = parseMonthYear(b.monthYear);
+        return dateA.getTime() - dateB.getTime();
+      });
+
+      setSavedTimelineRows(sortedRows);
     } catch (err) {
       console.error('Unexpected error fetching timeline rows:', err);
       alert(`An unexpected error occurred: ${err instanceof Error ? err.message : 'Unknown error'}`);
