@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import Toast from '@/components/Toast';
+import ContactsBarChart from '@/components/ContactsBarChart';
 
 interface Contact {
   id: string;
@@ -258,8 +259,6 @@ export default function ViewChroniclePage() {
     });
   }, [contacts, searchQuery, source, dateRangeStart, dateRangeEnd, hasActiveFilters]);
 
-  const maxCount = monthlyData.length > 0 ? Math.max(...monthlyData.map(d => d.count), 1) : 1;
-
   const updateNote = (contactId: string, note: string) => {
     setNotes({ ...notes, [contactId]: note });
   };
@@ -367,48 +366,8 @@ export default function ViewChroniclePage() {
       </div>
 
       {/* Chart Section */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-8">
-        <h2 className="text-xl font-semibold text-[#305669] mb-4">
-          Contacts Added by Month (Last 5 Years)
-        </h2>
-        <div className="overflow-x-auto">
-          {isLoading ? (
-            <div className="flex items-center justify-center h-64">
-              <p className="text-gray-500">Loading chart data...</p>
-            </div>
-          ) : monthlyData.length === 0 ? (
-            <div className="flex items-center justify-center h-64">
-              <p className="text-gray-500">No data available</p>
-            </div>
-          ) : (
-            <div className="flex items-end space-x-1 h-64 pb-8 border-b border-gray-200">
-              {monthlyData.map((item, index) => {
-                const height = (item.count / maxCount) * 100;
-                return (
-                  <div key={index} className="flex flex-col items-center flex-1 min-w-[20px]">
-                    <div
-                      className="w-full bg-[#C1785A] rounded-t hover:bg-[#b06a4a] transition-colors cursor-pointer"
-                      style={{ height: `${height}%` }}
-                      title={`${item.month}: ${item.count} contacts`}
-                    />
-                    {index % 6 === 0 && (
-                      <span className="text-xs text-gray-600 mt-2 transform -rotate-45 origin-left whitespace-nowrap">
-                        {item.month}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-          <div className="mt-4 flex justify-between items-center">
-            <p className="text-sm text-gray-600">X-axis: Month (MM-YY)</p>
-            <p className="text-sm text-gray-600">Y-axis: Number of Contacts Added</p>
-          </div>
-          <p className="text-xs text-gray-500 mt-2 italic">
-            Bars show monthly additions; cycles indicate bursts vs. lulls.
-          </p>
-        </div>
+      <div className="mb-8">
+        <ContactsBarChart data={monthlyData} isLoading={isLoading} />
       </div>
 
       {/* Filter Panel */}
@@ -526,7 +485,6 @@ export default function ViewChroniclePage() {
               </table>
             </div>
           </div>
-        </div>
       </div>
 
       {/* Toast Notification */}

@@ -14,7 +14,7 @@ export default function Navigation() {
   ];
 
   return (
-    <nav className="bg-[#FFC29B] border-b border-gray-200 shadow-sm">
+    <nav className="bg-[#FFA4A4] border-b border-gray-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row justify-between items-center h-auto sm:h-16 py-3 sm:py-0">
           <div className="flex items-center mb-3 sm:mb-0">
