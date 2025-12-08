@@ -580,21 +580,21 @@ export default function ViewChroniclePage() {
 
       {/* Filter Panel */}
       <div className="mb-4">
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+        <div className="bg-[#16476A] rounded-lg border border-gray-200 shadow-sm p-4">
           <div className="flex justify-between items-center mb-3">
-            <h2 className="text-lg font-semibold text-[#305669]">
+            <h2 className="text-lg font-semibold text-white">
               Filter Panel
             </h2>
             <button
               onClick={clearAllFilters}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors font-semibold text-sm whitespace-nowrap"
+              className="px-4 py-2 bg-[#FAEAB1] text-gray-700 rounded-md hover:bg-[#f5e09a] transition-colors font-semibold text-sm whitespace-nowrap"
             >
               Clear
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3 mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-white mb-2">
                 Event Type
               </label>
               <select
@@ -603,7 +603,7 @@ export default function ViewChroniclePage() {
                   setEventType(e.target.value);
                   setSelectedEvent('All'); // Reset event selection when type changes
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9]"
+                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9]"
               >
                 <option>All</option>
                 <option>Professional</option>
@@ -612,13 +612,13 @@ export default function ViewChroniclePage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-white mb-2">
                 Events
               </label>
               <select
                 value={selectedEvent}
                 onChange={(e) => setSelectedEvent(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9]"
+                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9]"
                 disabled={eventType === 'All'}
               >
                 <option>All</option>
@@ -630,35 +630,35 @@ export default function ViewChroniclePage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-white mb-2">
                 Date Range Start
               </label>
               <input
                 type="date"
                 value={dateRangeStart}
                 onChange={(e) => setDateRangeStart(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9]"
+                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9]"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-white mb-2">
                 Date Range End
               </label>
               <input
                 type="date"
                 value={dateRangeEnd}
                 onChange={(e) => setDateRangeEnd(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9]"
+                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9]"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-white mb-2">
                 Source
               </label>
               <select
                 value={source}
                 onChange={(e) => setSource(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9]"
+                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9]"
               >
                 <option>All</option>
                 <option>LinkedIn</option>
@@ -674,9 +674,9 @@ export default function ViewChroniclePage() {
           </div>
 
           {/* Contacts Table Section */}
-          <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="mt-4 pt-4 border-t border-gray-400">
             <div className="flex justify-between items-center mb-3">
-              <h2 className="text-lg font-semibold text-[#305669]">
+              <h2 className="text-lg font-semibold text-white">
                 Contacts
               </h2>
               <div className="flex gap-2">
@@ -685,18 +685,18 @@ export default function ViewChroniclePage() {
                   placeholder="Search by name..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] w-64"
+                  className="px-4 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] w-64"
                 />
                 <button
                   onClick={exportToCSV}
-                  className="px-4 py-2 bg-[#305669] text-white rounded-md hover:bg-[#244a5a] transition-colors font-semibold text-sm whitespace-nowrap"
+                  className="px-4 py-2 bg-[#FAEAB1] text-gray-700 rounded-md hover:bg-[#f5e09a] transition-colors font-semibold text-sm whitespace-nowrap"
                 >
                   Export CSV
                 </button>
               </div>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-[#456882]">
+              <table className="w-full bg-white border-collapse border border-[#456882]">
                 <thead>
                   <tr>
                     <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Name</th>

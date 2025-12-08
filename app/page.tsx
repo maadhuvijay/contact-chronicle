@@ -15,19 +15,19 @@ export default function Home() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
             href="/my-timeline"
-            className="px-6 py-3 bg-[#305669] text-white rounded-md hover:bg-[#244a5a] transition-colors font-semibold"
+            className="px-6 py-3 bg-[#8174A0] text-white rounded-md hover:bg-[#6d5f8a] transition-colors font-semibold"
           >
             Build Your Timeline
           </Link>
           <Link
             href="/upload-contacts"
-            className="px-6 py-3 bg-[#8ABEB9] text-white rounded-md hover:bg-[#7aada8] transition-colors font-semibold"
+            className="px-6 py-3 bg-[#A888B5] text-white rounded-md hover:bg-[#93759f] transition-colors font-semibold"
           >
             Upload Contacts
           </Link>
           <Link
             href="/view-chronicle"
-            className="px-6 py-3 bg-[#C1785A] text-white rounded-md hover:bg-[#b06a4a] transition-colors font-semibold"
+            className="px-6 py-3 bg-[#EFB6C8] text-white rounded-md hover:bg-[#d9a0b3] transition-colors font-semibold"
           >
             View Chronicle
           </Link>
