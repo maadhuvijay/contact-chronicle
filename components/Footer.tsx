@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="bg-[#FFBDBD] border-t border-gray-200 mt-auto">
+    <footer className="bg-[#80A1BA] border-t border-gray-200 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <p className="text-center text-sm text-gray-600 font-bold">
           Week1 Sprint @Overclock Accelerator
