@@ -336,3 +336,29 @@ The component should now work with the recharts imports (`ResponsiveContainer`, 
 
 ---
 
+_**User (2025-12-08 16:17Z)**_
+
+  } from 'recharts';
+
+- 
+
+- interface MonthlyData {
+
+-   month: string; // Format: MM-YY
+
+-   count: number;
+
+-   monthKey: string; // Format: YYYY-MM for sorting
+
+-   fullDate: Date;
+
+- }
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
