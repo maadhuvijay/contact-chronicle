@@ -496,33 +496,34 @@ export default function ViewChroniclePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredContacts.map((contact) => (
-                    <tr key={contact.id} className="hover:bg-gray-50">
-                      <td className="py-3 px-4 text-sm border border-[#456882]">{contact.name}</td>
-                      <td className="py-3 px-4 text-sm border border-[#456882]">{contact.company}</td>
-                      <td className="py-3 px-4 text-sm border border-[#456882]">{contact.role}</td>
-                      <td className="py-3 px-4 text-sm border border-[#456882]">{contact.dateAdded}</td>
-                      <td className="py-3 px-4 text-sm border border-[#456882]">{contact.source}</td>
-                      <td className="py-3 px-4 border border-[#456882]">
-                        <textarea
-                          value={notes[contact.id] || ''}
-                          onChange={(e) => updateNote(contact.id, e.target.value)}
-                          placeholder="Add note..."
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] resize-none"
-                          rows={2}
-                        />
+                  {filteredContacts.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="text-center text-gray-500 py-8">
+                        {hasActiveFilters ? 'No contacts found matching your filters' : 'Apply filters to view contacts'}
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    filteredContacts.map((contact) => (
+                      <tr key={contact.id} className="hover:bg-gray-50">
+                        <td className="py-3 px-4 text-sm border border-[#456882]">{contact.name}</td>
+                        <td className="py-3 px-4 text-sm border border-[#456882]">{contact.company}</td>
+                        <td className="py-3 px-4 text-sm border border-[#456882]">{contact.role}</td>
+                        <td className="py-3 px-4 text-sm border border-[#456882]">{contact.dateAdded}</td>
+                        <td className="py-3 px-4 text-sm border border-[#456882]">{contact.source}</td>
+                        <td className="py-3 px-4 border border-[#456882]">
+                          <textarea
+                            value={notes[contact.id] || ''}
+                            onChange={(e) => updateNote(contact.id, e.target.value)}
+                            placeholder="Add note..."
+                            className="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] resize-none"
+                            rows={2}
+                          />
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
-              {filteredContacts.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="text-center text-gray-500 py-8">
-                    {hasActiveFilters ? 'No contacts found matching your filters' : 'Apply filters to view contacts'}
-                  </td>
-                </tr>
-              )}
             </div>
           </div>
         </div>
