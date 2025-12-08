@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import Toast from '@/components/Toast';
 import ContactsBarChart from '@/components/ContactsBarChart';
+import { MonthlyData } from '@/types';
 
 interface Contact {
   id: string;
@@ -27,13 +28,6 @@ interface DatabaseContact {
   source: string | null;
   created_at: string;
   updated_at: string;
-}
-
-interface MonthlyData {
-  month: string; // Format: MM-YY
-  count: number;
-  monthKey: string; // Format: YYYY-MM for sorting
-  fullDate: Date; // For peak month formatting
 }
 
 interface TimelineEvent {
