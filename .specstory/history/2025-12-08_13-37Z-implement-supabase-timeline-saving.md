@@ -1040,3 +1040,124 @@ The implementation replaces all existing rows each time you click "Confirm Timel
 
 ---
 
+_**User (2025-12-07 17:08Z)**_
+
+I have added the anon key
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Verifying the setup and checking for issues. Ensuring the Supabase client is configured correctly:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: lib/supabase.ts</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="codebase_search">
+<details>
+                <summary>Tool use: **codebase_search** • Searched codebase "environment variables NEXT_PUBLIC_SUPABASE" • **15** results</summary>
+            
+| File | Lines |
+|------|-------|
+| `.gitignore` | L41 |
+| `next.config.ts` | L6 |
+| `package.json` | L27 |
+| `eslint.config.mjs` | L17 |
+| `README.md` | L36 |
+| `tsconfig.json` | L34 |
+| `components/Navigation.tsx` | L50 |
+| `app/layout.tsx` | L39 |
+| `app/page.tsx` | L46 |
+| `app/layout.tsx` | L16-39 |
+| `app/upload-contacts/page.tsx` | L239 |
+| `app/view-chronicle/page.tsx` | L24-378 |
+| `app/upload-contacts/page.tsx` | L4-239 |
+| `app/upload-contacts/page.tsx` | L13-239 |
+| `app/my-timeline/page.tsx` | L6-255 |
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: app/my-timeline/page.tsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Setup looks good. Ensure both environment variables are set:
+
+1. `NEXT_PUBLIC_SUPABASE_URL` — your Supabase project URL
+2. `NEXT_PUBLIC_SUPABASE_ANON_KEY` — your anon key
+
+Make sure your `.env.local` file has both:
+```
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
+```
+
+Next, create the database table. Run the SQL from `supabase-schema.sql` in your Supabase SQL Editor:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: supabase-schema.sql</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+## To complete the setup:
+
+1. **Create the database table:**
+   - Go to your Supabase project dashboard
+   - Open the SQL Editor
+   - Copy and paste the SQL from `supabase-schema.sql` (shown above)
+   - Run it to create the `timeline_rows` table
+
+2. **Restart your dev server** (if it's running):
+   - Environment variables are loaded at startup, so restart to pick up the new values
+   - Stop the server (Ctrl+C) and run `npm run dev` again
+
+3. **Test the integration:**
+   - Navigate to `/my-timeline`
+   - Add some rows using the "Add Row" button
+   - Fill in some timeline data
+   - Click "Confirm Timeline"
+   - You should see the "Timeline saved" toast message
+   - Refresh the page to verify the data loads from the database
+
+If you run into issues, check the browser console for error messages. The code handles cases where the table doesn't exist yet, so the first save will work once the table is created.
+
+Is the Supabase URL also set in your `.env.local` file?
+
+---
+
