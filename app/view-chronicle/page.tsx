@@ -273,14 +273,15 @@ export default function ViewChroniclePage() {
     
     const trimmed = monthYear.trim();
     
-    // Try MM-YY format (e.g., "01-24" for January 2024)
+    // Try MM-YY format (e.g., "01-24" for January 2024, "05-06" for May 2006)
     const mmYyMatch = trimmed.match(/^(\d{2})-(\d{2})$/);
     if (mmYyMatch) {
-      const month = parseInt(mmYyMatch[1], 10);
-      const year = parseInt(mmYyMatch[2], 10);
-      // Assume 20XX for 2-digit years
+      const month = parseInt(mmYyMatch[1], 10); // First group is month
+      const year = parseInt(mmYyMatch[2], 10);   // Second group is year
+      // Assume 20XX for 2-digit years (e.g., 06 -> 2006, 24 -> 2024)
       const fullYear = year < 100 ? 2000 + year : year;
       if (month >= 1 && month <= 12) {
+        // Return in YYYY-MM-DD format with day = 01
         return `${fullYear}-${String(month).padStart(2, '0')}-01`;
       }
     }
@@ -337,31 +338,6 @@ export default function ViewChroniclePage() {
     return '';
   };
 
-  // Handle event selection - set date range start when event is selected
-  // Automatically sets to the event's month and year with day = 1
-  useEffect(() => {
-    if (selectedEvent !== 'All' && timelineEvents.length > 0) {
-      const event = timelineEvents.find((e) => e.id === selectedEvent);
-      if (event && event.monthYear && event.monthYear.trim()) {
-        const eventDate = parseMonthYearToDate(event.monthYear);
-        if (eventDate && eventDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
-          // Set date range start to event's month/year with day = 01 (format: YYYY-MM-01)
-          // This ensures the date input displays the full date with month and year from the event
-          setDateRangeStart(eventDate);
-        } else {
-          // If parsing failed, try to log for debugging
-          console.warn('Failed to parse date from monthYear:', event.monthYear, 'Result:', eventDate);
-          setDateRangeStart('');
-        }
-      } else {
-        // If event is selected but has no monthYear, clear the date
-        setDateRangeStart('');
-      }
-    } else if (selectedEvent === 'All') {
-      // If no event is selected, clear the date range start
-      setDateRangeStart('');
-    }
-  }, [selectedEvent, timelineEvents]);
 
   // Calculate metrics
   const metrics = useMemo(() => {
