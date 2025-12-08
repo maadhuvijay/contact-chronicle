@@ -64,10 +64,11 @@ export default function ViewTimelinePage() {
       const { year, month } = dateInfo;
 
       // Check if row has all three events (for highlight logic)
-      const hasAllEvents =
+      const hasAllEvents = !!(
         row.professional_event?.trim() &&
         row.personal_event?.trim() &&
-        row.geographic_event?.trim();
+        row.geographic_event?.trim()
+      );
 
       // Create separate events for each event type that has content
       // Professional Event
