@@ -462,3 +462,27 @@ Lint errors for `app/view-chronicle/page.tsx`
 
 ---
 
+
+Reduced the view timeline layout size. Changes:
+
+**Main Page (`app/view-chronicle/page.tsx`):**
+- Reduced page padding from `py-8` to `py-4`
+- Reduced main heading from `text-3xl` to `text-2xl` and margins
+- Reduced Connections Dashboard padding from `p-6` to `p-4` and margin from `mb-8` to `mb-5`
+- Reduced metric card padding from `p-6` to `p-4` and font sizes from `text-3xl` to `text-2xl`
+- Reduced chart section margin from `mb-8` to `mb-5`
+- Reduced Filter Panel padding from `p-6` to `p-4` and heading sizes
+- Reduced grid gaps from `gap-4` to `gap-3`
+- Reduced section margins throughout
+
+**Chart Component (`components/ContactsBarChart.tsx`):**
+- Reduced chart container padding from `p-6` to `p-4`
+- Reduced chart height from `400px` to `320px`
+- Reduced title from `text-xl` to `text-lg` and subtitle from `text-sm` to `text-xs`
+- Reduced chart margins and font sizes for axis labels
+- Reduced loading/empty state heights from `h-64` to `h-48`
+
+The layout is more compact while maintaining readability and functionality.
+
+---
+
