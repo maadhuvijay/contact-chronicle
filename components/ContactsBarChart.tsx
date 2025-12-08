@@ -9,13 +9,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-
-interface MonthlyData {
-  month: string; // Format: MM-YY
-  count: number;
-  monthKey: string; // Format: YYYY-MM for sorting
-  fullDate: Date;
-}
+import { MonthlyData } from '@/types';
 
 interface ContactsBarChartProps {
   data: MonthlyData[];
