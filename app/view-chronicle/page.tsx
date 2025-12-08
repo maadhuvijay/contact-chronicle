@@ -13,8 +13,8 @@ export const dynamic = 'force-dynamic';
 interface Contact {
   id: string;
   name: string;
-  company: string;
-  role: string;
+  email: string;
+  phone: string;
   dateAdded: string;
   source: string;
   notes: string;
@@ -89,8 +89,8 @@ export default function ViewChroniclePage() {
           const transformedContacts: Contact[] = data.map((dbContact: DatabaseContact) => ({
             id: dbContact.id,
             name: `${dbContact.first_name || ''} ${dbContact.last_name || ''}`.trim() || 'Unknown',
-            company: '', // Not in database schema
-            role: '', // Not in database schema
+            email: dbContact.email || '',
+            phone: dbContact.phone || '',
             dateAdded: dbContact.date_added || dbContact.created_at.split('T')[0],
             source: dbContact.source || 'Unknown',
             notes: '',
@@ -473,7 +473,7 @@ export default function ViewChroniclePage() {
 
   const exportToCSV = () => {
     // CSV headers
-    const headers = ['Name', 'Company', 'Role', 'Date Added', 'Source', 'Notes'];
+    const headers = ['Name', 'Email', 'Phone', 'Date Added', 'Source', 'Notes'];
     
     // Convert contacts to CSV rows
     const csvRows = [
@@ -481,8 +481,8 @@ export default function ViewChroniclePage() {
       ...filteredContacts.map((contact) => {
         const row = [
           `"${contact.name.replace(/"/g, '""')}"`,
-          `"${contact.company.replace(/"/g, '""')}"`,
-          `"${contact.role.replace(/"/g, '""')}"`,
+          `"${contact.email.replace(/"/g, '""')}"`,
+          `"${contact.phone.replace(/"/g, '""')}"`,
           `"${formatDateToFull(contact.dateAdded).replace(/"/g, '""')}"`,
           `"${contact.source.replace(/"/g, '""')}"`,
           `"${(notes[contact.id] || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
@@ -700,8 +700,8 @@ export default function ViewChroniclePage() {
                 <thead>
                   <tr>
                     <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Name</th>
-                    <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Company</th>
-                    <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Role</th>
+                    <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Email</th>
+                    <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Phone</th>
                     <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Date Added</th>
                     <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Source</th>
                     <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Notes</th>
@@ -718,8 +718,8 @@ export default function ViewChroniclePage() {
                     filteredContacts.map((contact) => (
                       <tr key={contact.id} className="hover:bg-gray-50">
                         <td className="py-3 px-4 text-sm border border-[#456882]">{contact.name}</td>
-                        <td className="py-3 px-4 text-sm border border-[#456882]">{contact.company || '-'}</td>
-                        <td className="py-3 px-4 text-sm border border-[#456882]">{contact.role || '-'}</td>
+                        <td className="py-3 px-4 text-sm border border-[#456882]">{contact.email || '-'}</td>
+                        <td className="py-3 px-4 text-sm border border-[#456882]">{contact.phone || '-'}</td>
                         <td className="py-3 px-4 text-sm border border-[#456882]">{formatDateToFull(contact.dateAdded)}</td>
                         <td className="py-3 px-4 text-sm border border-[#456882]">{contact.source}</td>
                         <td className="py-3 px-4 border border-[#456882]">
