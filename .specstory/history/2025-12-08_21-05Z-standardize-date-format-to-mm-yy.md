@@ -1073,3 +1073,452 @@ All date displays now use the MM-YY format (e.g., "01-24" for January 2024). The
 
 ---
 
+_**User (2025-12-08 16:17Z)**_
+
+The date added in the contacts table in page3 should show the full date. 
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Updating the Date Added column in the contacts table to show the full date instead of MM-YY, while keeping MM-YY elsewhere.
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: app/view-chronicle/page.tsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: lib/dateUtils.ts</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: app/view-chronicle/page.tsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="grep">
+<details>
+<summary>Tool use: **grep** • Grep for "formatDateToMMYY\(contact\.dateAdded\)" in "app/view-chronicle/page.tsx" • 2 matches</summary>
+
+Output mode: content
+
+
+| File | Content | Line |
+|------|------|------|
+| `app/view-chronicle/page.tsx` | ``"$\{formatDateToMMYY(contact.dateAdded).replace(/"/g, '""')\}"`,` | L506 |
+| `app/view-chronicle/page.tsx` | `<td className="py-3 px-4 text-sm border border-[#456882]">\{formatDateToMMYY(contact.dateAdded)\}</td>` | L743 |
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Adding a function to format full dates and updating the Date Added column to show the full date:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: lib/dateUtils.ts</summary>
+
+**Chunk 1**
+Lines added: 32, lines removed: undefined
+
+```diff
+@@ -44,4 +44,36 @@
+    return &#96;${month}-${year}&#96;;
+  }
++ 
++ /**
++  * Formats a date string or Date object to full date format (MM/DD/YYYY)
++  * @param date - Date string or Date object
++  * @returns Formatted date string in MM/DD/YYYY format, or original string if invalid
++  */
++ export function formatDateToFull(date: string | Date | null | undefined): string {
++   if (!date) return '';
++   
++   let dateObj: Date;
++   
++   // If it's already a Date object, use it
++   if (date instanceof Date) {
++     dateObj = date;
++   } else {
++     // Try to parse the string as a date
++     dateObj = new Date(date);
++   }
++   
++   // Check if date is valid
++   if (isNaN(dateObj.getTime())) {
++     // If invalid, return original string if it's a string, otherwise empty
++     return typeof date === 'string' ? date : '';
++   }
++   
++   // Format as MM/DD/YYYY
++   const month = String(dateObj.getMonth() + 1).padStart(2, '0');
++   const day = String(dateObj.getDate()).padStart(2, '0');
++   const year = String(dateObj.getFullYear());
++   
++   return &#96;${month}/${day}/${year}&#96;;
++ }
+  
+  
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: app/view-chronicle/page.tsx</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -6,5 +6,5 @@
+  import ContactsBarChart from '@/components/ContactsBarChart';
+  import { MonthlyData } from '@/types';
+- import { formatDateToMMYY, formatDateObjectToMMYY } from '@/lib/dateUtils';
++ import { formatDateToMMYY, formatDateObjectToMMYY, formatDateToFull } from '@/lib/dateUtils';
+  
+  interface Contact {
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: app/view-chronicle/page.tsx</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -741,5 +741,5 @@
+                          &lt;td className="py-3 px-4 text-sm border border-[#456882]"&gt;{contact.company || '-'}&lt;/td&gt;
+                          &lt;td className="py-3 px-4 text-sm border border-[#456882]"&gt;{contact.role || '-'}&lt;/td&gt;
+-                         &lt;td className="py-3 px-4 text-sm border border-[#456882]"&gt;{formatDateToMMYY(contact.dateAdded)}&lt;/td&gt;
++                         &lt;td className="py-3 px-4 text-sm border border-[#456882]"&gt;{formatDateToFull(contact.dateAdded)}&lt;/td&gt;
+                          &lt;td className="py-3 px-4 text-sm border border-[#456882]"&gt;{contact.source}&lt;/td&gt;
+                          &lt;td className="py-3 px-4 border border-[#456882]"&gt;
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: app/view-chronicle/page.tsx</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -504,5 +504,5 @@
+            &#96;"${contact.company.replace(/"/g, '""')}"&#96;,
+            &#96;"${contact.role.replace(/"/g, '""')}"&#96;,
+-           &#96;"${formatDateToMMYY(contact.dateAdded).replace(/"/g, '""')}"&#96;,
++           &#96;"${formatDateToFull(contact.dateAdded).replace(/"/g, '""')}"&#96;,
+            &#96;"${contact.source.replace(/"/g, '""')}"&#96;,
+            &#96;"${(notes[contact.id] || '').replace(/"/g, '""').replace(/\n/g, ' ')}"&#96;,
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
+<details>
+          <summary>Tool use: **read_lints** • Read lints for 2 files</summary>
+      
+Lint paths:
+
+- `lib/dateUtils.ts`
+- `app/view-chronicle/page.tsx`
+
+Lint results
+
+
+**No lint errors found**
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Updated the Date Added column in the contacts table to show the full date (MM/DD/YYYY) instead of MM-YY.
+
+1. **Added a new utility function** (`formatDateToFull()`) in `lib/dateUtils.ts`:
+   - Formats dates to MM/DD/YYYY (e.g., "01/15/2024")
+
+2. **Updated the contacts table** in `app/view-chronicle/page.tsx`:
+   - Date Added column now shows the full date
+   - CSV export also uses the full date format for consistency
+
+Other date displays (Peak Month, High Activity Month, chart labels) remain in MM-YY format. Only the Date Added column in the contacts table shows the full date.
+
+---
+
+_**User (2025-12-08 16:17Z)**_
+
+the date range start should display the month and year of the event selected in events
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Updating the date range start to display the selected event's month and year (MM-YY) instead of a full date. Checking the current implementation:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: app/view-chronicle/page.tsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: app/view-chronicle/page.tsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: app/view-chronicle/page.tsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: app/view-chronicle/page.tsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+_**User (2025-12-08 16:17Z)**_
+
+The date range start should display the month and year of the event selected and it can display the full date taking the day as 01. the month and year should match the event month and year
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Updating the date range start to show the selected event's month and year with day 01. Verifying the parsing and ensuring it's set correctly:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: app/view-chronicle/page.tsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Verifying the date range start logic. The parsing looks correct; ensuring it handles all cases and the date is set properly:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: app/view-chronicle/page.tsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="codebase_search">
+<details>
+                <summary>Tool use: **codebase_search** • Searched codebase "How are timeline events monthYear values stored in the database?" • **8** results</summary>
+            
+| File | Lines |
+|------|-------|
+| `app/my-timeline/page.tsx` | L6-399 |
+| `app/my-timeline/page.tsx` | L12 |
+| `app/view-chronicle/page.tsx` | L9-771 |
+| `app/view-chronicle/page.tsx` | L51-771 |
+| `app/view-chronicle/page.tsx` | L17 |
+| `app/view-chronicle/page.tsx` | L19-771 |
+| `app/upload-contacts/page.tsx` | L16 |
+| `app/page.tsx` | L46 |
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+The logic looks correct. Ensuring the date range start is set correctly when an event is selected and that it handles all monthYear formats. Verifying and improving the implementation:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: app/view-chronicle/page.tsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Verifying the date parsing and ensuring the date range start is set correctly. The logic looks correct; adding a safeguard to ensure the date is properly formatted:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: app/view-chronicle/page.tsx</summary>
+
+**Chunk 1**
+Lines added: 5, lines removed: 4
+
+```diff
+@@ -343,12 +343,13 @@
+      if (selectedEvent !== 'All' &amp;&amp; timelineEvents.length &gt; 0) {
+        const event = timelineEvents.find((e) =&gt; e.id === selectedEvent);
+-       if (event &amp;&amp; event.monthYear) {
++       if (event &amp;&amp; event.monthYear &amp;&amp; event.monthYear.trim()) {
+          const eventDate = parseMonthYearToDate(event.monthYear);
+-         if (eventDate) {
+-           // Set date range start to event's month/year with day = 1 (format: YYYY-MM-01)
++         if (eventDate &amp;&amp; eventDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
++           // Set date range start to event's month/year with day = 01 (format: YYYY-MM-01)
++           // This ensures the date input displays the full date with month and year from the event
+            setDateRangeStart(eventDate);
+          } else {
+            // If parsing failed, try to log for debugging
+-           console.warn('Failed to parse date from monthYear:', event.monthYear);
++           console.warn('Failed to parse date from monthYear:', event.monthYear, 'Result:', eventDate);
+            setDateRangeStart('');
+          }
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
+<details>
+          <summary>Tool use: **read_lints** • Read lints for 1 file</summary>
+      
+Lint paths:
+
+- `app/view-chronicle/page.tsx`
+
+Lint results
+
+
+**No lint errors found**
+</details>
+</tool-use>
+
+---
+
+
+
+---
+

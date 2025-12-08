@@ -44,3 +44,35 @@ export function formatDateObjectToMMYY(date: Date): string {
   return `${month}-${year}`;
 }
 
+/**
+ * Formats a date string or Date object to full date format (MM/DD/YYYY)
+ * @param date - Date string or Date object
+ * @returns Formatted date string in MM/DD/YYYY format, or original string if invalid
+ */
+export function formatDateToFull(date: string | Date | null | undefined): string {
+  if (!date) return '';
+  
+  let dateObj: Date;
+  
+  // If it's already a Date object, use it
+  if (date instanceof Date) {
+    dateObj = date;
+  } else {
+    // Try to parse the string as a date
+    dateObj = new Date(date);
+  }
+  
+  // Check if date is valid
+  if (isNaN(dateObj.getTime())) {
+    // If invalid, return original string if it's a string, otherwise empty
+    return typeof date === 'string' ? date : '';
+  }
+  
+  // Format as MM/DD/YYYY
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  const year = String(dateObj.getFullYear());
+  
+  return `${month}/${day}/${year}`;
+}
+

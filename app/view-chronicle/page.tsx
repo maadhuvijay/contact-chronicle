@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import Toast from '@/components/Toast';
 import ContactsBarChart from '@/components/ContactsBarChart';
 import { MonthlyData } from '@/types';
-import { formatDateToMMYY, formatDateObjectToMMYY } from '@/lib/dateUtils';
+import { formatDateToMMYY, formatDateObjectToMMYY, formatDateToFull } from '@/lib/dateUtils';
 
 interface Contact {
   id: string;
@@ -342,14 +342,15 @@ export default function ViewChroniclePage() {
   useEffect(() => {
     if (selectedEvent !== 'All' && timelineEvents.length > 0) {
       const event = timelineEvents.find((e) => e.id === selectedEvent);
-      if (event && event.monthYear) {
+      if (event && event.monthYear && event.monthYear.trim()) {
         const eventDate = parseMonthYearToDate(event.monthYear);
-        if (eventDate) {
-          // Set date range start to event's month/year with day = 1 (format: YYYY-MM-01)
+        if (eventDate && eventDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+          // Set date range start to event's month/year with day = 01 (format: YYYY-MM-01)
+          // This ensures the date input displays the full date with month and year from the event
           setDateRangeStart(eventDate);
         } else {
           // If parsing failed, try to log for debugging
-          console.warn('Failed to parse date from monthYear:', event.monthYear);
+          console.warn('Failed to parse date from monthYear:', event.monthYear, 'Result:', eventDate);
           setDateRangeStart('');
         }
       } else {
@@ -503,7 +504,7 @@ export default function ViewChroniclePage() {
           `"${contact.name.replace(/"/g, '""')}"`,
           `"${contact.company.replace(/"/g, '""')}"`,
           `"${contact.role.replace(/"/g, '""')}"`,
-          `"${formatDateToMMYY(contact.dateAdded).replace(/"/g, '""')}"`,
+          `"${formatDateToFull(contact.dateAdded).replace(/"/g, '""')}"`,
           `"${contact.source.replace(/"/g, '""')}"`,
           `"${(notes[contact.id] || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
         ];
@@ -740,7 +741,7 @@ export default function ViewChroniclePage() {
                         <td className="py-3 px-4 text-sm border border-[#456882]">{contact.name}</td>
                         <td className="py-3 px-4 text-sm border border-[#456882]">{contact.company || '-'}</td>
                         <td className="py-3 px-4 text-sm border border-[#456882]">{contact.role || '-'}</td>
-                        <td className="py-3 px-4 text-sm border border-[#456882]">{formatDateToMMYY(contact.dateAdded)}</td>
+                        <td className="py-3 px-4 text-sm border border-[#456882]">{formatDateToFull(contact.dateAdded)}</td>
                         <td className="py-3 px-4 text-sm border border-[#456882]">{contact.source}</td>
                         <td className="py-3 px-4 border border-[#456882]">
                           <textarea
