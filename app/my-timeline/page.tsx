@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import Toast from '@/components/Toast';
+import VerticalTimeline, { TimelineEvent } from '@/components/VerticalTimeline';
 
 // Prevent static generation since this page uses Supabase
 export const dynamic = 'force-dynamic';
@@ -378,15 +379,12 @@ export default function MyTimelinePage() {
 
       {/* Timeline Visualization */}
       {showTimelineView && (
-        <div className="mt-8 rounded-lg overflow-hidden shadow-lg">
-          <div className="relative" style={{
-            backgroundColor: '#F5D2D2',
-            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(0,0,0,0.02) 1px, transparent 0)`,
-            backgroundSize: '20px 20px'
-          }}>
+        <div className="mt-8 rounded-lg border border-gray-200 shadow-sm bg-white overflow-hidden">
+          <div className="p-6">
             {isLoadingTimeline ? (
               <div className="text-center py-12">
-                <p className="text-gray-600">Loading timeline...</p>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#305669]"></div>
+                <p className="text-gray-600 mt-4">Loading timeline...</p>
               </div>
             ) : savedTimelineRows.length === 0 ? (
               <div className="text-center py-12">
@@ -402,219 +400,106 @@ export default function MyTimelinePage() {
   );
 }
 
-// Timeline Visualization Component - Premium Editorial Design
+// Timeline Visualization Component - Transforms TimelineRow data to VerticalTimeline format
 function TimelineVisualization({ rows }: { rows: TimelineRow[] }) {
-  const [containerWidth, setContainerWidth] = useState(1200);
-
-  // Extract year from monthYear (format: MM/YYYY or YYYY)
-  const extractYear = (monthYear: string): string => {
-    if (!monthYear.trim()) return '';
-    const parts = monthYear.split('/');
-    if (parts.length === 2) return parts[1]; // MM/YYYY format
-    if (parts.length === 1 && parts[0].length === 4) return parts[0]; // YYYY format
-    return monthYear;
-  };
-
-  // Get primary event text (first non-empty event)
-  const getPrimaryEvent = (row: TimelineRow): string => {
-    if (row.professionalEvent.trim()) return row.professionalEvent;
-    if (row.personalEvent.trim()) return row.personalEvent;
-    if (row.geographicEvent.trim()) return row.geographicEvent;
-    return '';
-  };
-
-  // Get minimalist icon based on event type
-  const getMinimalistIcon = (row: TimelineRow) => {
-    if (row.professionalEvent.trim()) {
-      return (
-        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 .414-.336.75-.75.75h-4.5a.75.75 0 01-.75-.75v-4.25m0 0h-4.5m4.5 0V9.75m-4.5 0h4.5m-4.5 0l-4.5-4.5m4.5 4.5l4.5-4.5" />
-        </svg>
-      );
+  // Parse month_year string (MM/YYYY or YYYY format) to extract year and month
+  const parseMonthYear = (monthYear: string): { year: number; month: number } | null => {
+    if (!monthYear || !monthYear.trim()) {
+      return null;
     }
-    if (row.personalEvent.trim()) {
-      return (
-        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-        </svg>
-      );
+
+    const trimmed = monthYear.trim();
+    const parts = trimmed.split('/');
+
+    // Handle MM/YYYY format
+    if (parts.length === 2) {
+      const month = parseInt(parts[0], 10);
+      const year = parseInt(parts[1], 10);
+      if (!isNaN(month) && !isNaN(year) && month >= 1 && month <= 12) {
+        return { year, month };
+      }
     }
-    if (row.geographicEvent.trim()) {
-      return (
-        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-        </svg>
-      );
+
+    // Handle YYYY format (default to January)
+    if (parts.length === 1 && parts[0].length === 4) {
+      const year = parseInt(parts[0], 10);
+      if (!isNaN(year)) {
+        return { year, month: 1 };
+      }
     }
+
     return null;
   };
 
-  // Calculate positions for curved timeline
-  const timelineHeight = 400;
-  const milestoneRadius = 60;
-  const minSpacing = 280;
-  const spacing = rows.length > 1 
-    ? Math.max(minSpacing, (containerWidth - 200) / (rows.length - 1))
-    : minSpacing;
-  const curveAmplitude = 30;
+  // Transform TimelineRow data to TimelineEvent format
+  const transformToTimelineEvents = (rows: TimelineRow[]): TimelineEvent[] => {
+    const events: TimelineEvent[] = [];
 
-  // Handle resize
-  useEffect(() => {
-    const handleResize = () => {
-      if (typeof window !== 'undefined') {
-        setContainerWidth(window.innerWidth);
+    rows.forEach((row) => {
+      const dateInfo = parseMonthYear(row.monthYear);
+      if (!dateInfo) {
+        return; // Skip rows with invalid dates
       }
-    };
 
-    if (typeof window !== 'undefined') {
-      setContainerWidth(window.innerWidth);
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
-    }
-  }, []);
+      const { year, month } = dateInfo;
 
-  // Ref callback to measure container
-  const containerRef = (el: HTMLDivElement | null) => {
-    if (el) {
-      const width = el.offsetWidth || (typeof window !== 'undefined' ? window.innerWidth : 1200);
-      setContainerWidth(width);
-    }
+      // Check if row has all three events (for highlight logic)
+      const hasAllEvents =
+        row.professionalEvent?.trim() &&
+        row.personalEvent?.trim() &&
+        row.geographicEvent?.trim();
+
+      // Create separate events for each event type that has content
+      // Professional Event
+      if (row.professionalEvent && row.professionalEvent.trim()) {
+        events.push({
+          id: `${row.id}-professional`,
+          year,
+          month,
+          eventTitle: 'Professional Event',
+          eventDescription: row.professionalEvent.trim(),
+          highlight: hasAllEvents, // Highlight if all three events exist
+        });
+      }
+
+      // Personal Event
+      if (row.personalEvent && row.personalEvent.trim()) {
+        events.push({
+          id: `${row.id}-personal`,
+          year,
+          month,
+          eventTitle: 'Personal Event',
+          eventDescription: row.personalEvent.trim(),
+          highlight: false,
+        });
+      }
+
+      // Geographic Event
+      if (row.geographicEvent && row.geographicEvent.trim()) {
+        events.push({
+          id: `${row.id}-geographic`,
+          year,
+          month,
+          eventTitle: 'Geographic Event',
+          eventDescription: row.geographicEvent.trim(),
+          highlight: false,
+        });
+      }
+    });
+
+    return events;
   };
 
-  // Generate SVG path for curved timeline with alternating segments
-  const generateTimelinePath = () => {
-    if (rows.length === 0) return '';
-    
-    const startX = 100;
-    const endX = startX + (rows.length - 1) * spacing;
-    const centerY = timelineHeight / 2;
-    
-    // Create a smooth curve
-    const controlPoints = [];
-    for (let i = 0; i < rows.length - 1; i++) {
-      const x1 = startX + i * spacing;
-      const x2 = startX + (i + 1) * spacing;
-      const midX = (x1 + x2) / 2;
-      const y = centerY + Math.sin((i / rows.length) * Math.PI * 2) * curveAmplitude;
-      controlPoints.push({ x: midX, y });
-    }
+  const timelineEvents = transformToTimelineEvents(rows);
 
-    let path = `M ${startX} ${centerY}`;
-    for (let i = 0; i < controlPoints.length; i++) {
-      const cp = controlPoints[i];
-      const nextX = startX + (i + 1) * spacing;
-      path += ` Q ${cp.x} ${cp.y} ${nextX} ${centerY}`;
-    }
-
-    return path;
-  };
-
-  return (
-    <div className="relative w-full overflow-x-auto py-16" ref={containerRef}>
-      <div className="min-w-full" style={{ minHeight: `${timelineHeight}px`, minWidth: `${Math.max(1200, (rows.length - 1) * spacing + 200)}px` }}>
-        {/* SVG Timeline Path */}
-        <svg className="absolute top-0 left-0 w-full h-full" style={{ height: `${timelineHeight}px` }} preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="timelineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#d97706" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#d97706" stopOpacity="0.6" />
-            </linearGradient>
-          </defs>
-          
-          {/* Curved timeline path with alternating segments */}
-          <path
-            d={generateTimelinePath()}
-            fill="none"
-            stroke="url(#timelineGradient)"
-            strokeWidth="2"
-            strokeDasharray={rows.length > 1 ? "8 4" : "0"}
-            strokeLinecap="round"
-            className="drop-shadow-sm"
-          />
-        </svg>
-
-        {/* Milestones */}
-        <div className="relative flex items-center justify-around px-8" style={{ height: `${timelineHeight}px` }}>
-          {rows.map((row, index) => {
-            const year = extractYear(row.monthYear);
-            const primaryEvent = getPrimaryEvent(row);
-            const xPosition = 100 + index * spacing;
-            const yOffset = Math.sin((index / rows.length) * Math.PI * 2) * curveAmplitude;
-            const isEven = index % 2 === 0;
-
-            return (
-              <div
-                key={row.id}
-                className="absolute flex flex-col items-center"
-                style={{
-                  left: `${xPosition}px`,
-                  transform: `translateX(-50%) translateY(${yOffset}px)`,
-                }}
-              >
-                {/* Year Number - Above or below based on index */}
-                {year && (
-                  <div
-                    className={`text-4xl font-bold tracking-tight mb-4 ${isEven ? 'order-1' : 'order-3 mt-4'}`}
-                    style={{ fontFamily: 'system-ui, -apple-system, sans-serif', color: '#640D5F' }}
-                  >
-                    {year}
-                  </div>
-                )}
-
-                {/* Circular Milestone Marker */}
-                <div
-                  className={`relative order-2 ${isEven ? 'mb-4' : 'mt-4'}`}
-                >
-                  <div
-                    className="relative rounded-full border-2 border-gray-300 bg-white shadow-lg"
-                    style={{
-                      width: `${milestoneRadius * 2}px`,
-                      height: `${milestoneRadius * 2}px`,
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04)',
-                    }}
-                  >
-                    {/* Image Placeholder - Grayscale */}
-                    <div className="absolute inset-2 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden">
-                      <div className="w-full h-full bg-gray-200 opacity-40 flex items-center justify-center">
-                        {getMinimalistIcon(row)}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Descriptive Text Block */}
-                {primaryEvent && (
-                  <div
-                    className={`text-center max-w-[200px] ${isEven ? 'order-3 mt-4' : 'order-1 mb-4'}`}
-                  >
-                    <div className="text-sm font-light text-gray-600 leading-relaxed tracking-wide">
-                      {primaryEvent.length > 50 ? `${primaryEvent.substring(0, 50)}...` : primaryEvent}
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Topographic/Wave Pattern at Bottom */}
-        <div className="absolute bottom-0 left-0 right-0 h-24 opacity-10">
-          <svg className="w-full h-full" viewBox="0 0 1200 100" preserveAspectRatio="none">
-            <path
-              d="M0,50 Q150,20 300,50 T600,50 T900,50 T1200,50 L1200,100 L0,100 Z"
-              fill="currentColor"
-              className="text-gray-400"
-            />
-            <path
-              d="M0,60 Q200,30 400,60 T800,60 T1200,60 L1200,100 L0,100 Z"
-              fill="currentColor"
-              className="text-gray-300"
-            />
-          </svg>
-        </div>
+  if (timelineEvents.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-600">No timeline events to display.</p>
       </div>
-    </div>
-  );
+    );
+  }
+
+  return <VerticalTimeline events={timelineEvents} />;
 }
 
