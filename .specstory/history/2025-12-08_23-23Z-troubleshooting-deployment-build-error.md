@@ -211,12 +211,553 @@ Checking the CSS file and running a build to identify the error:
 ```bash
 npm run build
 ```
+
+```
+npm error Missing script: "build"
+npm error
+npm error To see a list of scripts, run:
+npm error   npm run
+npm error A complete log of this run can be found in: C:\Users\maadh\AppData\Local\npm-cache\_logs\2025-12-08T23_23_30_062Z-debug-0.log
+
+```
 </details>
 </tool-use>
 
 ---
 
 
+
+---
+
+
+Installing dependencies, then running the build:
+
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: npm install</summary>
+
+```bash
+npm install
+```
+
+```
+
+up to date, audited 57 packages in 524ms
+
+2 packages are looking for funding
+  run &#96;npm fund&#96; for details
+
+found 0 vulnerabilities
+
+```
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+
+
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: npm run build</summary>
+
+```bash
+npm run build
+```
+
+```
+npm error Missing script: "build"
+npm error
+npm error To see a list of scripts, run:
+npm error   npm run
+npm error A complete log of this run can be found in: C:\Users\maadh\AppData\Local\npm-cache\_logs\2025-12-08T23_23_39_183Z-debug-0.log
+
+```
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Checking available scripts and verifying package.json:
+
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: npm run</summary>
+
+```bash
+npm run
+```
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: package.json</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Running the build directly:
+
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: npx next build</summary>
+
+```bash
+npx next build
+```
+
+```
+
+&gt; Build error occurred
+Error: &gt; Couldn't find any &#96;pages&#96; or &#96;app&#96; directory. Please create one under the project root
+    at ignore-listed frames
+
+```
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Next.js isn't detecting the `app` directory. Verifying the directory structure and checking for configuration issues:
+
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="list_dir">
+<details>
+            <summary>Tool use: **list_dir** • Listed directory undefined • **0** results</summary>
+        
+No results found
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: next.config.ts</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="codebase_search">
+<details>
+                <summary>Tool use: **codebase_search** • Searched codebase "Where is the app directory configured or referenced in Next.js configuration?" • **15** results</summary>
+            
+| File | Lines |
+|------|-------|
+| `next.config.ts` | L6 |
+| `package.json` | L28 |
+| `app/layout.tsx` | L39 |
+| `README.md` | L36 |
+| `tsconfig.json` | L34 |
+| `app/layout.tsx` | L16-39 |
+| `eslint.config.mjs` | L17 |
+| `.gitignore` | L41 |
+| `app/page.tsx` | L46 |
+| `components/Navigation.tsx` | L50 |
+| `app/globals.css` | L29 |
+| `postcss.config.mjs` | L6 |
+| `.cursorindexingignore` | L3 |
+| `components/Footer.tsx` | L10 |
+| `app/upload-contacts/page.tsx` | L19 |
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+The `app` directory exists. Checking the current directory and clearing the Next.js cache:
+
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: pwd</summary>
+
+```bash
+pwd
+```
+
+```
+
+
+```
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: if (Test-Path .next) { Remove-Item -Recurse -Force .next }</summary>
+
+```bash
+if (Test-Path .next) { Remove-Item -Recurse -Force .next }
+```
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Verifying the current directory and checking for the app directory:
+
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: Get-Location</summary>
+
+```bash
+Get-Location
+```
+
+```
+
+
+```
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: Test-Path app</summary>
+
+```bash
+Test-Path app
+```
+
+```
+False
+
+```
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: npx next build</summary>
+
+```bash
+npx next build
+```
+
+```
+
+&gt; Build error occurred
+Error: &gt; Couldn't find any &#96;pages&#96; or &#96;app&#96; directory. Please create one under the project root
+    at ignore-listed frames
+
+```
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Not in the project root. Navigating to it:
+
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: cd "C:\Users\maadh\Git Local\AI-Accelerator\Week1_sprint\contact-chronicle"</summary>
+
+```bash
+cd "C:\Users\maadh\Git Local\AI-Accelerator\Week1_sprint\contact-chronicle"
+```
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: Test-Path app</summary>
+
+```bash
+Test-Path app
+```
+
+```
+True
+
+```
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: npx next build</summary>
+
+```bash
+npx next build
+```
+
+```
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\maadh\package-lock.json as the root directory.
+ To silence this warning, set &#96;turbopack.root&#96; in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * C:\Users\maadh\Git Local\AI-Accelerator\Week1_sprint\contact-chronicle\package-lock.json
+
+   ▲ Next.js 16.0.7 (Turbopack)
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 2.2s
+   Running TypeScript ...
+Failed to compile.
+
+./app/view-timeline/page.tsx:81:11
+Type error: Type 'string | undefined' is not assignable to type 'boolean | undefined'.
+  Type 'string' is not assignable to type 'boolean | undefined'.
+
+[0m [90m 79 |[39m           eventTitle[33m:[39m [32m'Professional Event'[39m[33m,[39m
+ [90m 80 |[39m           eventDescription[33m:[39m row[33m.[39mprofessional_event[33m.[39mtrim()[33m,[39m
+[31m[1m&gt;[22m[39m[90m 81 |[39m           highlight[33m:[39m hasAllEvents[33m,[39m [90m// Highlight if all three events exist[39m
+ [90m    |[39m           [31m[1m^[22m[39m
+ [90m 82 |[39m         })[33m;[39m
+ [90m 83 |[39m       }
+ [90m 84 |[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+
+```
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Found the build error: a TypeScript type mismatch in `app/view-timeline/page.tsx`. Reading the file to fix it:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: app/view-timeline/page.tsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Checking the TimelineEvent type definition to confirm the expected type:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: components/VerticalTimeline.tsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+The `highlight` property expects a boolean, but `hasAllEvents` can be a string or undefined. Converting it to a boolean:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: app/view-timeline/page.tsx</summary>
+
+**Chunk 1**
+Lines added: 3, lines removed: 2
+
+```diff
+@@ -65,8 +65,9 @@
+  
+        // Check if row has all three events (for highlight logic)
+-       const hasAllEvents =
++       const hasAllEvents = !!(
+          row.professional_event?.trim() &amp;&amp;
+          row.personal_event?.trim() &amp;&amp;
+-         row.geographic_event?.trim();
++         row.geographic_event?.trim()
++       );
+  
+        // Create separate events for each event type that has content
+```
+
+</details>
+
+</tool-use>
+
+---
+
+
+
+---
+
+
+Verifying the build succeeds:
+
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: npx next build</summary>
+
+```bash
+npx next build
+```
+
+```
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\maadh\package-lock.json as the root directory.
+ To silence this warning, set &#96;turbopack.root&#96; in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * C:\Users\maadh\Git Local\AI-Accelerator\Week1_sprint\contact-chronicle\package-lock.json
+
+   ▲ Next.js 16.0.7 (Turbopack)
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 2.0s
+   Running TypeScript ...
+   Collecting page data using 23 workers ...
+   Generating static pages using 23 workers (0/8) ...
+   Generating static pages using 23 workers (2/8) 
+   Generating static pages using 23 workers (4/8) 
+   Generating static pages using 23 workers (6/8) 
+ ✓ Generating static pages using 23 workers (8/8) in 1071.8ms
+   Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /my-timeline
+├ ○ /upload-contacts
+├ ○ /view-chronicle
+└ ○ /view-timeline
+
+
+○  (Static)  prerendered as static content
+
+
+```
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Build succeeded. Checking for remaining linter errors:
+
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
+<details>
+          <summary>Tool use: **read_lints** • Read lints for 1 file</summary>
+      
+Lint paths:
+
+- `app/view-timeline/page.tsx`
+
+Lint results
+
+
+**No lint errors found**
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Build error fixed.
+
+**The Problem:**
+In `app/view-timeline/page.tsx`, `hasAllEvents` was computed using the `&&` operator with strings, which returns a string or undefined, not a boolean. The `highlight` property in the `TimelineEvent` interface expects a boolean.
+
+**The Fix:**
+I wrapped the expression with `!!()` to convert it to a boolean:
+```typescript
+const hasAllEvents = !!(
+  row.professional_event?.trim() &&
+  row.personal_event?.trim() &&
+  row.geographic_event?.trim()
+);
+```
+
+The build now completes successfully. There's a warning about multiple lockfiles (one in your home directory and one in the project), but it won't prevent deployment. You can ignore it or remove the extra lockfile if needed.
+
+Your project should now deploy successfully.
 
 ---
 
