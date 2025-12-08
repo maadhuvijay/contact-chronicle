@@ -54,10 +54,18 @@ export default function MyTimelinePage() {
           .order('created_at', { ascending: true });
 
         if (error) {
-          console.error('Error loading timeline rows:', error);
           // If table doesn't exist, continue with default empty row
           if (error.code === 'PGRST116') {
             console.log('Table does not exist yet. Will be created on first save.');
+          } else {
+            // Log error with more details and fallbacks
+            console.error('Error loading timeline rows:', {
+              message: error.message || 'No error message',
+              code: error.code || 'No error code',
+              details: error.details || 'No details',
+              hint: error.hint || 'No hint',
+              fullError: error
+            });
           }
         } else if (data && data.length > 0) {
           // Map database rows to TimelineRow format
@@ -71,7 +79,14 @@ export default function MyTimelinePage() {
           setTimelineRows(mappedRows);
         }
       } catch (err) {
-        console.error('Unexpected error loading timeline:', err);
+        // Handle unexpected errors with better logging
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        const errorStack = err instanceof Error ? err.stack : undefined;
+        console.error('Unexpected error loading timeline:', {
+          message: errorMessage,
+          stack: errorStack,
+          error: err
+        });
       } finally {
         setIsLoading(false);
       }
@@ -96,7 +111,13 @@ export default function MyTimelinePage() {
           .in('id', idsToDelete);
 
         if (deleteError && deleteError.code !== 'PGRST116') {
-          console.error('Error deleting existing rows:', deleteError);
+          console.error('Error deleting existing rows:', {
+            message: deleteError.message,
+            code: deleteError.code,
+            details: deleteError.details,
+            hint: deleteError.hint,
+            error: deleteError
+          });
           // Continue anyway - the insert might still work
         }
       }
@@ -116,8 +137,14 @@ export default function MyTimelinePage() {
         .select();
 
       if (error) {
-        console.error('Error saving timeline rows:', error);
-        alert('Failed to save timeline. Please check your Supabase configuration.');
+        console.error('Error saving timeline rows:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint,
+          error: error
+        });
+        alert(`Failed to save timeline: ${error.message || 'Unknown error'}. Please check your Supabase configuration.`);
         return;
       }
 
@@ -136,8 +163,12 @@ export default function MyTimelinePage() {
       // Show success toast
       setShowToast(true);
     } catch (err) {
-      console.error('Unexpected error saving timeline:', err);
-      alert('An unexpected error occurred. Please try again.');
+      console.error('Unexpected error saving timeline:', {
+        error: err,
+        message: err instanceof Error ? err.message : 'Unknown error',
+        stack: err instanceof Error ? err.stack : undefined
+      });
+      alert(`An unexpected error occurred: ${err instanceof Error ? err.message : 'Unknown error'}. Please try again.`);
     }
   };
 
