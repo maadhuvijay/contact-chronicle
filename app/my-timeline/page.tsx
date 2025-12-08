@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import Toast from '@/components/Toast';
 
 interface TimelineRow {
   id: string;
@@ -14,6 +16,8 @@ export default function MyTimelinePage() {
   const [timelineRows, setTimelineRows] = useState<TimelineRow[]>([
     { id: '1', monthYear: '', professionalEvent: '', personalEvent: '', geographicEvent: '' },
   ]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showToast, setShowToast] = useState(false);
 
   const addRow = () => {
     const newRow: TimelineRow = {
@@ -40,13 +44,120 @@ export default function MyTimelinePage() {
     );
   };
 
-  const handleConfirm = () => {
-    console.log('Timeline Data:', timelineRows);
-    alert('Timeline data logged to console. Check browser console for details.');
+  // Load existing timeline rows from database
+  useEffect(() => {
+    const loadTimelineRows = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('timeline_rows')
+          .select('*')
+          .order('created_at', { ascending: true });
+
+        if (error) {
+          console.error('Error loading timeline rows:', error);
+          // If table doesn't exist, continue with default empty row
+          if (error.code === 'PGRST116') {
+            console.log('Table does not exist yet. Will be created on first save.');
+          }
+        } else if (data && data.length > 0) {
+          // Map database rows to TimelineRow format
+          const mappedRows: TimelineRow[] = data.map((row) => ({
+            id: row.id.toString(),
+            monthYear: row.month_year || '',
+            professionalEvent: row.professional_event || '',
+            personalEvent: row.personal_event || '',
+            geographicEvent: row.geographic_event || '',
+          }));
+          setTimelineRows(mappedRows);
+        }
+      } catch (err) {
+        console.error('Unexpected error loading timeline:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTimelineRows();
+  }, []);
+
+  const handleConfirm = async () => {
+    try {
+      // First, fetch all existing rows to get their IDs
+      const { data: existingRows } = await supabase
+        .from('timeline_rows')
+        .select('id');
+
+      // Delete all existing rows (for single user, we replace all on each save)
+      if (existingRows && existingRows.length > 0) {
+        const idsToDelete = existingRows.map((row) => row.id);
+        const { error: deleteError } = await supabase
+          .from('timeline_rows')
+          .delete()
+          .in('id', idsToDelete);
+
+        if (deleteError && deleteError.code !== 'PGRST116') {
+          console.error('Error deleting existing rows:', deleteError);
+          // Continue anyway - the insert might still work
+        }
+      }
+
+      // Prepare data for insertion (exclude the temporary id)
+      const rowsToInsert = timelineRows.map((row) => ({
+        month_year: row.monthYear,
+        professional_event: row.professionalEvent,
+        personal_event: row.personalEvent,
+        geographic_event: row.geographicEvent,
+      }));
+
+      // Insert all rows
+      const { data, error } = await supabase
+        .from('timeline_rows')
+        .insert(rowsToInsert)
+        .select();
+
+      if (error) {
+        console.error('Error saving timeline rows:', error);
+        alert('Failed to save timeline. Please check your Supabase configuration.');
+        return;
+      }
+
+      // Update local state with database IDs
+      if (data) {
+        const updatedRows: TimelineRow[] = data.map((row, index) => ({
+          id: row.id.toString(),
+          monthYear: row.month_year || '',
+          professionalEvent: row.professional_event || '',
+          personalEvent: row.personal_event || '',
+          geographicEvent: row.geographic_event || '',
+        }));
+        setTimelineRows(updatedRows);
+      }
+
+      // Show success toast
+      setShowToast(true);
+    } catch (err) {
+      console.error('Unexpected error saving timeline:', err);
+      alert('An unexpected error occurred. Please try again.');
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-12">
+          <p className="text-gray-600">Loading timeline...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <Toast
+        message="Timeline saved"
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+      />
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-[#305669] mb-2">
           Build Your Personal Timeline
