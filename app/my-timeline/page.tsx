@@ -44,91 +44,36 @@ export default function MyTimelinePage() {
     );
   };
 
-  // Load existing timeline rows from database
+  // Initialize page with single empty row (don't load existing data)
   useEffect(() => {
-    const loadTimelineRows = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('timeline_rows')
-          .select('*')
-          .order('created_at', { ascending: true });
-
-        if (error) {
-          // If table doesn't exist, continue with default empty row
-          if (error.code === 'PGRST116') {
-            console.log('Table does not exist yet. Will be created on first save.');
-          } else {
-            // Log error with more details and fallbacks
-            console.error('Error loading timeline rows:', {
-              message: error.message || 'No error message',
-              code: error.code || 'No error code',
-              details: error.details || 'No details',
-              hint: error.hint || 'No hint',
-              fullError: error
-            });
-          }
-        } else if (data && data.length > 0) {
-          // Map database rows to TimelineRow format
-          const mappedRows: TimelineRow[] = data.map((row) => ({
-            id: row.id.toString(),
-            monthYear: row.month_year || '',
-            professionalEvent: row.professional_event || '',
-            personalEvent: row.personal_event || '',
-            geographicEvent: row.geographic_event || '',
-          }));
-          setTimelineRows(mappedRows);
-        }
-      } catch (err) {
-        // Handle unexpected errors with better logging
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-        const errorStack = err instanceof Error ? err.stack : undefined;
-        console.error('Unexpected error loading timeline:', {
-          message: errorMessage,
-          stack: errorStack,
-          error: err
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadTimelineRows();
+    // Always start with one empty row for new entries
+    setIsLoading(false);
   }, []);
 
   const handleConfirm = async () => {
     try {
-      // First, fetch all existing rows to get their IDs
-      const { data: existingRows } = await supabase
-        .from('timeline_rows')
-        .select('id');
-
-      // Delete all existing rows (for single user, we replace all on each save)
-      if (existingRows && existingRows.length > 0) {
-        const idsToDelete = existingRows.map((row) => row.id);
-        const { error: deleteError } = await supabase
-          .from('timeline_rows')
-          .delete()
-          .in('id', idsToDelete);
-
-        if (deleteError && deleteError.code !== 'PGRST116') {
-          console.error('Error deleting existing rows:', {
-            message: deleteError.message,
-            code: deleteError.code,
-            details: deleteError.details,
-            hint: deleteError.hint,
-            error: deleteError
-          });
-          // Continue anyway - the insert might still work
-        }
-      }
-
       // Prepare data for insertion (exclude the temporary id)
-      const rowsToInsert = timelineRows.map((row) => ({
-        month_year: row.monthYear,
-        professional_event: row.professionalEvent,
-        personal_event: row.personalEvent,
-        geographic_event: row.geographicEvent,
-      }));
+      // Filter out completely empty rows
+      const rowsToInsert = timelineRows
+        .filter((row) => {
+          // Keep rows that have at least one field filled
+          return row.monthYear.trim() || 
+                 row.professionalEvent.trim() || 
+                 row.personalEvent.trim() || 
+                 row.geographicEvent.trim();
+        })
+        .map((row) => ({
+          month_year: row.monthYear,
+          professional_event: row.professionalEvent,
+          personal_event: row.personalEvent,
+          geographic_event: row.geographicEvent,
+        }));
+
+      // If no valid rows to insert, show message and return
+      if (rowsToInsert.length === 0) {
+        alert('Please fill in at least one field in at least one row before saving.');
+        return;
+      }
 
       // Insert all rows
       const { data, error } = await supabase
@@ -148,17 +93,10 @@ export default function MyTimelinePage() {
         return;
       }
 
-      // Update local state with database IDs
-      if (data) {
-        const updatedRows: TimelineRow[] = data.map((row, index) => ({
-          id: row.id.toString(),
-          monthYear: row.month_year || '',
-          professionalEvent: row.professional_event || '',
-          personalEvent: row.personal_event || '',
-          geographicEvent: row.geographic_event || '',
-        }));
-        setTimelineRows(updatedRows);
-      }
+      // After successful save, clear rows and keep only one empty row
+      setTimelineRows([
+        { id: Date.now().toString(), monthYear: '', professionalEvent: '', personalEvent: '', geographicEvent: '' },
+      ]);
 
       // Show success toast
       setShowToast(true);
