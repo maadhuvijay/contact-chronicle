@@ -36,6 +36,24 @@ interface MonthlyData {
   fullDate: Date; // For peak month formatting
 }
 
+interface TimelineEvent {
+  id: string;
+  monthYear: string;
+  event: string;
+  eventType: 'Professional' | 'Personal' | 'Geographic';
+  rowId: string; // Store the original row ID to fetch full date info if needed
+}
+
+interface DatabaseTimelineRow {
+  id: string;
+  month_year: string | null;
+  professional_event: string | null;
+  personal_event: string | null;
+  geographic_event: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export default function ViewChroniclePage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
@@ -45,6 +63,9 @@ export default function ViewChroniclePage() {
   const [dateRangeStart, setDateRangeStart] = useState('');
   const [dateRangeEnd, setDateRangeEnd] = useState('');
   const [source, setSource] = useState('All');
+  const [eventType, setEventType] = useState('All');
+  const [selectedEvent, setSelectedEvent] = useState('All');
+  const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([]);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
@@ -156,6 +177,167 @@ export default function ViewChroniclePage() {
     fetchContacts();
   }, []);
 
+  // Fetch timeline events from Supabase
+  useEffect(() => {
+    const fetchTimelineEvents = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('timeline_rows')
+          .select('*')
+          .order('created_at', { ascending: true });
+
+        if (error) {
+          console.error('Error fetching timeline events:', error);
+          return;
+        }
+
+        if (data) {
+          // Transform timeline rows into events array
+          const events: TimelineEvent[] = [];
+          data.forEach((row: DatabaseTimelineRow) => {
+            if (row.professional_event && row.professional_event.trim()) {
+              events.push({
+                id: `${row.id}-professional`,
+                monthYear: row.month_year || '',
+                event: row.professional_event,
+                eventType: 'Professional',
+                rowId: row.id,
+              });
+            }
+            if (row.personal_event && row.personal_event.trim()) {
+              events.push({
+                id: `${row.id}-personal`,
+                monthYear: row.month_year || '',
+                event: row.personal_event,
+                eventType: 'Personal',
+                rowId: row.id,
+              });
+            }
+            if (row.geographic_event && row.geographic_event.trim()) {
+              events.push({
+                id: `${row.id}-geographic`,
+                monthYear: row.month_year || '',
+                event: row.geographic_event,
+                eventType: 'Geographic',
+                rowId: row.id,
+              });
+            }
+          });
+          setTimelineEvents(events);
+        }
+      } catch (error) {
+        console.error('Error fetching timeline events:', error);
+      }
+    };
+
+    fetchTimelineEvents();
+  }, []);
+
+  // Filter events based on selected event type
+  const filteredEvents = useMemo(() => {
+    if (eventType === 'All') {
+      return timelineEvents;
+    }
+    return timelineEvents.filter((event) => event.eventType === eventType);
+  }, [timelineEvents, eventType]);
+
+  // Helper function to parse month_year string to date
+  const parseMonthYearToDate = (monthYear: string): string => {
+    if (!monthYear || !monthYear.trim()) {
+      return '';
+    }
+    
+    const trimmed = monthYear.trim();
+    
+    // Try MM-YY format (e.g., "01-24" for January 2024)
+    const mmYyMatch = trimmed.match(/^(\d{2})-(\d{2})$/);
+    if (mmYyMatch) {
+      const month = parseInt(mmYyMatch[1], 10);
+      const year = parseInt(mmYyMatch[2], 10);
+      // Assume 20XX for 2-digit years
+      const fullYear = year < 100 ? 2000 + year : year;
+      if (month >= 1 && month <= 12) {
+        return `${fullYear}-${String(month).padStart(2, '0')}-01`;
+      }
+    }
+    
+    // Try MM/YY format (e.g., "01/24")
+    const mmYySlashMatch = trimmed.match(/^(\d{2})\/(\d{2})$/);
+    if (mmYySlashMatch) {
+      const month = parseInt(mmYySlashMatch[1], 10);
+      const year = parseInt(mmYySlashMatch[2], 10);
+      const fullYear = year < 100 ? 2000 + year : year;
+      if (month >= 1 && month <= 12) {
+        return `${fullYear}-${String(month).padStart(2, '0')}-01`;
+      }
+    }
+    
+    // Try MM/YYYY format (e.g., "08/2006")
+    const mmYyyySlashMatch = trimmed.match(/^(\d{2})\/(\d{4})$/);
+    if (mmYyyySlashMatch) {
+      const month = parseInt(mmYyyySlashMatch[1], 10);
+      const year = parseInt(mmYyyySlashMatch[2], 10);
+      if (month >= 1 && month <= 12) {
+        return `${year}-${String(month).padStart(2, '0')}-01`;
+      }
+    }
+    
+    // Try YYYY-MM format (e.g., "2024-01")
+    const yyyyMmMatch = trimmed.match(/^(\d{4})-(\d{2})$/);
+    if (yyyyMmMatch) {
+      const year = parseInt(yyyyMmMatch[1], 10);
+      const month = parseInt(yyyyMmMatch[2], 10);
+      if (month >= 1 && month <= 12) {
+        return `${year}-${String(month).padStart(2, '0')}-01`;
+      }
+    }
+    
+    // Try MM-YYYY format (e.g., "01-2024")
+    const mmYyyyMatch = trimmed.match(/^(\d{2})-(\d{4})$/);
+    if (mmYyyyMatch) {
+      const month = parseInt(mmYyyyMatch[1], 10);
+      const year = parseInt(mmYyyyMatch[2], 10);
+      if (month >= 1 && month <= 12) {
+        return `${year}-${String(month).padStart(2, '0')}-01`;
+      }
+    }
+    
+    // If no format matches, try to parse as a date string
+    const parsedDate = new Date(trimmed);
+    if (!isNaN(parsedDate.getTime())) {
+      const year = parsedDate.getFullYear();
+      const month = parsedDate.getMonth() + 1;
+      return `${year}-${String(month).padStart(2, '0')}-01`;
+    }
+    
+    return '';
+  };
+
+  // Handle event selection - set date range start when event is selected
+  // Automatically sets to the event's month and year with day = 1
+  useEffect(() => {
+    if (selectedEvent !== 'All' && timelineEvents.length > 0) {
+      const event = timelineEvents.find((e) => e.id === selectedEvent);
+      if (event && event.monthYear) {
+        const eventDate = parseMonthYearToDate(event.monthYear);
+        if (eventDate) {
+          // Set date range start to event's month/year with day = 1 (format: YYYY-MM-01)
+          setDateRangeStart(eventDate);
+        } else {
+          // If parsing failed, try to log for debugging
+          console.warn('Failed to parse date from monthYear:', event.monthYear);
+          setDateRangeStart('');
+        }
+      } else {
+        // If event is selected but has no monthYear, clear the date
+        setDateRangeStart('');
+      }
+    } else if (selectedEvent === 'All') {
+      // If no event is selected, clear the date range start
+      setDateRangeStart('');
+    }
+  }, [selectedEvent, timelineEvents]);
+
   // Calculate metrics
   const metrics = useMemo(() => {
     if (monthlyData.length === 0) {
@@ -216,18 +398,16 @@ export default function ViewChroniclePage() {
     };
   }, [contacts, monthlyData]);
 
-  // Check if any filters are active
+  // Check if any filters are active - contacts only show when an event is selected
   const hasActiveFilters = useMemo(() => {
-    return searchQuery.trim() !== '' || 
-           source !== 'All' || 
-           dateRangeStart !== '' || 
-           dateRangeEnd !== '';
-  }, [searchQuery, source, dateRangeStart, dateRangeEnd]);
+    // Require a specific event to be selected
+    return selectedEvent !== 'All';
+  }, [selectedEvent]);
 
-  // Filter contacts - only show if filters are active
+  // Filter contacts - only show if an event is selected
   const filteredContacts = useMemo(() => {
-    // If no filters are active, return empty array
-    if (!hasActiveFilters) {
+    // If no event is selected, return empty array
+    if (selectedEvent === 'All') {
       return [];
     }
 
@@ -235,21 +415,35 @@ export default function ViewChroniclePage() {
       const matchesSearch = searchQuery.trim() === '' || contact.name.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesSource = source === 'All' || contact.source === source;
       
-      // Date range filtering
+      // Date range filtering - filter contacts based on Date Range Start and Date Range End
       let matchesDateRange = true;
-      if (dateRangeStart || dateRangeEnd) {
-        const contactDate = new Date(contact.dateAdded);
+      
+      // Parse contact date
+      const contactDate = new Date(contact.dateAdded);
+      if (isNaN(contactDate.getTime())) {
+        // If contact date is invalid, exclude it from date range filtering
+        matchesDateRange = false;
+      } else {
+        // Normalize contact date to start of day for comparison
+        const contactDateNormalized = new Date(contactDate);
+        contactDateNormalized.setHours(0, 0, 0, 0);
+        
+        // Check Date Range Start
         if (dateRangeStart) {
           const startDate = new Date(dateRangeStart);
           startDate.setHours(0, 0, 0, 0);
-          if (contactDate < startDate) {
+          // Contact date must be >= start date
+          if (contactDateNormalized < startDate) {
             matchesDateRange = false;
           }
         }
+        
+        // Check Date Range End
         if (dateRangeEnd) {
           const endDate = new Date(dateRangeEnd);
           endDate.setHours(23, 59, 59, 999);
-          if (contactDate > endDate) {
+          // Contact date must be <= end date
+          if (contactDateNormalized > endDate) {
             matchesDateRange = false;
           }
         }
@@ -257,10 +451,20 @@ export default function ViewChroniclePage() {
       
       return matchesSearch && matchesSource && matchesDateRange;
     });
-  }, [contacts, searchQuery, source, dateRangeStart, dateRangeEnd, hasActiveFilters]);
+  }, [contacts, searchQuery, source, dateRangeStart, dateRangeEnd, selectedEvent]);
 
   const updateNote = (contactId: string, note: string) => {
     setNotes({ ...notes, [contactId]: note });
+  };
+
+  const clearAllFilters = () => {
+    setSearchQuery('');
+    setDateRangeStart('');
+    setDateRangeEnd('');
+    setSource('All');
+    setEventType('All');
+    setSelectedEvent('All');
+    setNotes({});
   };
 
   const exportToCSV = () => {
@@ -373,10 +577,54 @@ export default function ViewChroniclePage() {
       {/* Filter Panel */}
       <div className="mb-6">
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-          <h2 className="text-xl font-semibold text-[#305669] mb-4">
-            Filter Panel
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-[#305669]">
+              Filter Panel
+            </h2>
+            <button
+              onClick={clearAllFilters}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors font-semibold text-sm whitespace-nowrap"
+            >
+              Clear
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Event Type
+              </label>
+              <select
+                value={eventType}
+                onChange={(e) => {
+                  setEventType(e.target.value);
+                  setSelectedEvent('All'); // Reset event selection when type changes
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9]"
+              >
+                <option>All</option>
+                <option>Professional</option>
+                <option>Personal</option>
+                <option>Geographic</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Events
+              </label>
+              <select
+                value={selectedEvent}
+                onChange={(e) => setSelectedEvent(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9]"
+                disabled={eventType === 'All'}
+              >
+                <option>All</option>
+                {filteredEvents.map((event) => (
+                  <option key={event.id} value={event.id}>
+                    {event.monthYear ? `${event.monthYear}: ` : ''}{event.event}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Date Range Start
@@ -412,16 +660,17 @@ export default function ViewChroniclePage() {
                 <option>LinkedIn</option>
                 <option>Google</option>
                 <option>Facebook</option>
+                <option>Twitter</option>
+                <option>Instagram</option>
+                <option>Email</option>
+                <option>Phone</option>
                 <option>Other</option>
               </select>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Contacts Table */}
-      <div className="mb-8">
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+          {/* Contacts Table Section */}
+          <div className="mt-6 pt-6 border-t border-gray-200">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-[#305669]">
                 Contacts
@@ -458,15 +707,15 @@ export default function ViewChroniclePage() {
                   {filteredContacts.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="text-center text-gray-500 py-8">
-                        {hasActiveFilters ? 'No contacts found matching your filters' : 'Apply filters to view contacts'}
+                        {selectedEvent !== 'All' ? 'No contacts found matching your filters' : 'Select an event to view contacts'}
                       </td>
                     </tr>
                   ) : (
                     filteredContacts.map((contact) => (
                       <tr key={contact.id} className="hover:bg-gray-50">
                         <td className="py-3 px-4 text-sm border border-[#456882]">{contact.name}</td>
-                        <td className="py-3 px-4 text-sm border border-[#456882]">{contact.company}</td>
-                        <td className="py-3 px-4 text-sm border border-[#456882]">{contact.role}</td>
+                        <td className="py-3 px-4 text-sm border border-[#456882]">{contact.company || '-'}</td>
+                        <td className="py-3 px-4 text-sm border border-[#456882]">{contact.role || '-'}</td>
                         <td className="py-3 px-4 text-sm border border-[#456882]">{contact.dateAdded}</td>
                         <td className="py-3 px-4 text-sm border border-[#456882]">{contact.source}</td>
                         <td className="py-3 px-4 border border-[#456882]">
@@ -485,6 +734,7 @@ export default function ViewChroniclePage() {
               </table>
             </div>
           </div>
+        </div>
       </div>
 
       {/* Toast Notification */}
