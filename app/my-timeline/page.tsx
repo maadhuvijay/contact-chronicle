@@ -295,7 +295,7 @@ export default function MyTimelinePage() {
                   <td className="py-3 px-4">
                     <input
                       type="text"
-                      placeholder="09/2025"
+                      placeholder="09-25"
                       value={row.monthYear}
                       onChange={(e) => updateRow(row.id, 'monthYear', e.target.value)}
                       className="w-full px-3 py-2 border border-[#896C6C] rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] focus:border-transparent"

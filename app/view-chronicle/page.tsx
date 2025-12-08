@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import Toast from '@/components/Toast';
 import ContactsBarChart from '@/components/ContactsBarChart';
 import { MonthlyData } from '@/types';
+import { formatDateToMMYY, formatDateObjectToMMYY } from '@/lib/dateUtils';
 
 interface Contact {
   id: string;
@@ -235,6 +236,35 @@ export default function ViewChroniclePage() {
     return timelineEvents.filter((event) => event.eventType === eventType);
   }, [timelineEvents, eventType]);
 
+  // Helper function to format monthYear string to MM-YY format for display
+  const formatMonthYearToMMYY = (monthYear: string): string => {
+    if (!monthYear || !monthYear.trim()) {
+      return '';
+    }
+    
+    // If already in MM-YY format, return as-is
+    const trimmed = monthYear.trim();
+    const mmYyMatch = trimmed.match(/^(\d{2})-(\d{2})$/);
+    if (mmYyMatch) {
+      return trimmed;
+    }
+    
+    // Try to parse and format
+    const dateString = parseMonthYearToDate(monthYear);
+    if (dateString) {
+      return formatDateToMMYY(dateString);
+    }
+    
+    // If parsing fails, try to parse directly as date
+    const parsedDate = new Date(trimmed);
+    if (!isNaN(parsedDate.getTime())) {
+      return formatDateObjectToMMYY(parsedDate);
+    }
+    
+    // If all else fails, return original
+    return trimmed;
+  };
+
   // Helper function to parse month_year string to date
   const parseMonthYearToDate = (monthYear: string): string => {
     if (!monthYear || !monthYear.trim()) {
@@ -354,7 +384,7 @@ export default function ViewChroniclePage() {
       item.count > max.count ? item : max, monthlyData[0]
     );
     const peakMonthFormatted = peakMonth.count > 0
-      ? `${String(peakMonth.fullDate.getMonth() + 1).padStart(2, '0')}/${peakMonth.fullDate.getFullYear()}`
+      ? formatDateObjectToMMYY(peakMonth.fullDate)
       : 'N/A';
 
     // Calculate median monthly volume
@@ -381,7 +411,7 @@ export default function ViewChroniclePage() {
       : null;
     
     const highActivityMonthFormatted = highActivityMonth && highActivityMonth.count > 0
-      ? `${String(highActivityMonth.fullDate.getMonth() + 1).padStart(2, '0')}/${highActivityMonth.fullDate.getFullYear()}`
+      ? formatDateObjectToMMYY(highActivityMonth.fullDate)
       : 'N/A';
 
     return {
@@ -473,7 +503,7 @@ export default function ViewChroniclePage() {
           `"${contact.name.replace(/"/g, '""')}"`,
           `"${contact.company.replace(/"/g, '""')}"`,
           `"${contact.role.replace(/"/g, '""')}"`,
-          `"${contact.dateAdded.replace(/"/g, '""')}"`,
+          `"${formatDateToMMYY(contact.dateAdded).replace(/"/g, '""')}"`,
           `"${contact.source.replace(/"/g, '""')}"`,
           `"${(notes[contact.id] || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
         ];
@@ -614,7 +644,7 @@ export default function ViewChroniclePage() {
                 <option>All</option>
                 {filteredEvents.map((event) => (
                   <option key={event.id} value={event.id}>
-                    {event.monthYear ? `${event.monthYear}: ` : ''}{event.event}
+                    {event.monthYear ? `${formatMonthYearToMMYY(event.monthYear)}: ` : ''}{event.event}
                   </option>
                 ))}
               </select>
@@ -710,7 +740,7 @@ export default function ViewChroniclePage() {
                         <td className="py-3 px-4 text-sm border border-[#456882]">{contact.name}</td>
                         <td className="py-3 px-4 text-sm border border-[#456882]">{contact.company || '-'}</td>
                         <td className="py-3 px-4 text-sm border border-[#456882]">{contact.role || '-'}</td>
-                        <td className="py-3 px-4 text-sm border border-[#456882]">{contact.dateAdded}</td>
+                        <td className="py-3 px-4 text-sm border border-[#456882]">{formatDateToMMYY(contact.dateAdded)}</td>
                         <td className="py-3 px-4 text-sm border border-[#456882]">{contact.source}</td>
                         <td className="py-3 px-4 border border-[#456882]">
                           <textarea
