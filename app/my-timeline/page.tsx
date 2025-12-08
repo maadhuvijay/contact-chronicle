@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import Toast from '@/components/Toast';
 
+// Prevent static generation since this page uses Supabase
+export const dynamic = 'force-dynamic';
+
 interface TimelineRow {
   id: string;
   monthYear: string;

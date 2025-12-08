@@ -7,6 +7,9 @@ import ContactsBarChart from '@/components/ContactsBarChart';
 import { MonthlyData } from '@/types';
 import { formatDateToMMYY, formatDateObjectToMMYY, formatDateToFull } from '@/lib/dateUtils';
 
+// Prevent static generation since this page uses Supabase
+export const dynamic = 'force-dynamic';
+
 interface Contact {
   id: string;
   name: string;

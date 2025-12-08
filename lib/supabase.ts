@@ -21,16 +21,30 @@ function getSupabaseClient(): SupabaseClient {
   return supabaseClient;
 }
 
-// Export a getter that creates the client on first use
-// This allows the module to be imported during build without throwing
+// Export a Proxy that lazily initializes the Supabase client
+// This allows the module to be imported during build without throwing errors
+// The client is only created when actually accessed at runtime
 export const supabase = new Proxy({} as SupabaseClient, {
-  get(_target, prop) {
+  get(_target, prop, _receiver) {
     const client = getSupabaseClient();
-    const value = client[prop as keyof SupabaseClient];
+    const value = (client as any)[prop];
     if (typeof value === 'function') {
       return value.bind(client);
     }
     return value;
+  },
+  has(_target, prop) {
+    const client = getSupabaseClient();
+    return prop in client;
+  },
+  ownKeys(_target) {
+    const client = getSupabaseClient();
+    return Object.keys(client);
+  },
+  getOwnPropertyDescriptor(_target, prop) {
+    const client = getSupabaseClient();
+    const descriptor = Object.getOwnPropertyDescriptor(client, prop);
+    return descriptor;
   },
 });
 
