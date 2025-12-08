@@ -444,10 +444,11 @@ function TimelineVisualization({ rows }: { rows: TimelineRow[] }) {
       const { year, month } = dateInfo;
 
       // Check if row has all three events (for highlight logic)
-      const hasAllEvents =
+      const hasAllEvents = !!(
         row.professionalEvent?.trim() &&
         row.personalEvent?.trim() &&
-        row.geographicEvent?.trim();
+        row.geographicEvent?.trim()
+      );
 
       // Create separate events for each event type that has content
       // Professional Event
