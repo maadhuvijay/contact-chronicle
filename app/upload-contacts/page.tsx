@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { supabase } from '@/lib/supabase';
+import Toast from '@/components/Toast';
 
 interface Contact {
   firstName?: string;
@@ -16,17 +18,22 @@ interface Contact {
 export default function UploadContactsPage() {
   const [file, setFile] = useState<File | null>(null);
   const [previewData, setPreviewData] = useState<Contact[]>([]);
+  const [csvText, setCsvText] = useState<string>('');
   const [isDragging, setIsDragging] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const parseCSV = (text: string): Contact[] => {
+  const parseCSV = (text: string, limit?: number): Contact[] => {
     const lines = text.split('\n').filter((line) => line.trim());
     if (lines.length === 0) return [];
 
     const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
     const data: Contact[] = [];
+    const maxRows = limit ? Math.min(lines.length, limit + 1) : lines.length;
 
-    for (let i = 1; i < Math.min(lines.length, 11); i++) {
+    for (let i = 1; i < maxRows; i++) {
       const values = lines[i].split(',').map((v) => v.trim());
       const contact: Contact = {};
       headers.forEach((header, index) => {
@@ -61,7 +68,9 @@ export default function UploadContactsPage() {
       const reader = new FileReader();
       reader.onload = (e) => {
         const text = e.target?.result as string;
-        const parsed = parseCSV(text);
+        setCsvText(text);
+        // Parse only first 5 rows for preview display
+        const parsed = parseCSV(text, 5);
         setPreviewData(parsed);
       };
       reader.readAsText(selectedFile);
@@ -95,14 +104,71 @@ export default function UploadContactsPage() {
     }
   };
 
-  const handleConfirm = () => {
-    console.log('Contacts Data:', previewData);
-    alert('Contacts data logged to console. Check browser console for details.');
+  const handleConfirm = async () => {
+    if (!csvText) {
+      setToastMessage('No file data to upload');
+      setShowToast(true);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Parse ALL rows from the CSV file (not just the 10 previewed rows)
+      const allContacts = parseCSV(csvText);
+      
+      if (allContacts.length === 0) {
+        setToastMessage('No contacts found in CSV file');
+        setShowToast(true);
+        setIsLoading(false);
+        return;
+      }
+
+      // Map Contact interface to database schema (camelCase to snake_case)
+      const contactsToInsert = allContacts.map((contact) => ({
+        first_name: contact.firstName || null,
+        last_name: contact.lastName || null,
+        email: contact.email || null,
+        phone: contact.phone || null,
+        linkedin: contact.linkedIn || null,
+        date_added: contact.dateAdded || null,
+        date_edited: contact.dateEdited || null,
+        source: contact.source || null,
+      }));
+
+      // Insert contacts into Supabase
+      const { data, error } = await supabase
+        .from('contacts')
+        .insert(contactsToInsert)
+        .select();
+
+      if (error) {
+        throw error;
+      }
+
+      // Success - show toast and reset form
+      setToastMessage(`Successfully uploaded ${allContacts.length} contact(s) to database!`);
+      setShowToast(true);
+      
+      // Reset form after successful upload
+      setFile(null);
+      setPreviewData([]);
+      setCsvText('');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (error) {
+      console.error('Error uploading contacts:', error);
+      setToastMessage(`Error uploading contacts: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setShowToast(true);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCancel = () => {
     setFile(null);
     setPreviewData([]);
+    setCsvText('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -183,7 +249,7 @@ export default function UploadContactsPage() {
               Preview Records
             </h2>
             <p className="text-sm text-gray-600 mb-4">
-              Table View of the Data Uploaded
+              Preview of first 5 records (all records from CSV will be uploaded)
             </p>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse border border-[#456882]">
@@ -222,19 +288,27 @@ export default function UploadContactsPage() {
         <div className="flex gap-4">
           <button
             onClick={handleConfirm}
-            disabled={previewData.length === 0}
+            disabled={previewData.length === 0 || isLoading}
             className="px-6 py-3 bg-[#305669] text-white rounded-md hover:bg-[#244a5a] transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Confirm
+            {isLoading ? 'Uploading...' : 'Confirm'}
           </button>
           <button
             onClick={handleCancel}
-            className="px-6 py-3 bg-[#305669] text-white rounded-md hover:bg-[#244a5a] transition-colors font-semibold"
+            disabled={isLoading}
+            className="px-6 py-3 bg-[#305669] text-white rounded-md hover:bg-[#244a5a] transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
         </div>
       </div>
+      
+      {/* Toast Notification */}
+      <Toast
+        message={toastMessage}
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+      />
     </div>
   );
 }

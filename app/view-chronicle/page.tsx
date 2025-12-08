@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import Toast from '@/components/Toast';
 
 interface Contact {
   id: string;
@@ -12,117 +14,251 @@ interface Contact {
   notes: string;
 }
 
-// Mock data for demonstration
-const mockContacts: Contact[] = [
-  { id: '1', name: 'John Doe', company: 'IBM', role: 'Software Engineer', dateAdded: '2022-11-15', source: 'LinkedIn', notes: '' },
-  { id: '2', name: 'Jane Smith', company: 'Google', role: 'Product Manager', dateAdded: '2022-11-20', source: 'LinkedIn', notes: '' },
-  { id: '3', name: 'Bob Johnson', company: 'Microsoft', role: 'Designer', dateAdded: '2022-10-05', source: 'Google', notes: '' },
-  { id: '4', name: 'Alice Williams', company: 'Apple', role: 'Developer', dateAdded: '2023-01-10', source: 'LinkedIn', notes: '' },
-  { id: '5', name: 'Charlie Brown', company: 'Amazon', role: 'Manager', dateAdded: '2023-02-15', source: 'Google', notes: '' },
-];
+interface DatabaseContact {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  phone: string | null;
+  linkedin: string | null;
+  date_added: string | null;
+  date_edited: string | null;
+  source: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
-// Mock monthly data for last 5 years
-const mockMonthlyData = [
-  { month: '10-20', count: 45 },
-  { month: '11-20', count: 62 },
-  { month: '12-20', count: 38 },
-  { month: '01-21', count: 55 },
-  { month: '02-21', count: 48 },
-  { month: '03-21', count: 71 },
-  { month: '04-21', count: 52 },
-  { month: '05-21', count: 59 },
-  { month: '06-21', count: 43 },
-  { month: '07-21', count: 67 },
-  { month: '08-21', count: 51 },
-  { month: '09-21', count: 58 },
-  { month: '10-21', count: 64 },
-  { month: '11-21', count: 89 },
-  { month: '12-21', count: 42 },
-  { month: '01-22', count: 56 },
-  { month: '02-22', count: 49 },
-  { month: '03-22', count: 73 },
-  { month: '04-22', count: 54 },
-  { month: '05-22', count: 61 },
-  { month: '06-22', count: 46 },
-  { month: '07-22', count: 69 },
-  { month: '08-22', count: 53 },
-  { month: '09-22', count: 60 },
-  { month: '10-22', count: 66 },
-  { month: '11-22', count: 188 },
-  { month: '12-22', count: 44 },
-  { month: '01-23', count: 57 },
-  { month: '02-23', count: 50 },
-  { month: '03-23', count: 74 },
-  { month: '04-23', count: 55 },
-  { month: '05-23', count: 62 },
-  { month: '06-23', count: 47 },
-  { month: '07-23', count: 70 },
-  { month: '08-23', count: 54 },
-  { month: '09-23', count: 61 },
-  { month: '10-23', count: 68 },
-  { month: '11-23', count: 92 },
-  { month: '12-23', count: 45 },
-  { month: '01-24', count: 58 },
-  { month: '02-24', count: 51 },
-  { month: '03-24', count: 75 },
-  { month: '04-24', count: 56 },
-  { month: '05-24', count: 63 },
-  { month: '06-24', count: 48 },
-  { month: '07-24', count: 72 },
-  { month: '08-24', count: 55 },
-  { month: '09-24', count: 62 },
-  { month: '10-24', count: 69 },
-  { month: '11-24', count: 95 },
-  { month: '12-24', count: 46 },
-  { month: '01-25', count: 59 },
-  { month: '02-25', count: 52 },
-  { month: '03-25', count: 76 },
-  { month: '04-25', count: 57 },
-  { month: '05-25', count: 64 },
-  { month: '06-25', count: 49 },
-  { month: '07-25', count: 73 },
-  { month: '08-25', count: 56 },
-];
+interface MonthlyData {
+  month: string; // Format: MM-YY
+  count: number;
+  monthKey: string; // Format: YYYY-MM for sorting
+  fullDate: Date; // For peak month formatting
+}
 
 export default function ViewChroniclePage() {
-  const [contacts] = useState<Contact[]>(mockContacts);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [dateRangeStart, setDateRangeStart] = useState('');
   const [dateRangeEnd, setDateRangeEnd] = useState('');
-  const [eventType, setEventType] = useState('All');
   const [source, setSource] = useState('All');
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+
+  // Fetch contacts from Supabase
+  useEffect(() => {
+    const fetchContacts = async () => {
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('contacts')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching contacts:', error);
+          setToastMessage('Error loading contacts');
+          setShowToast(true);
+          return;
+        }
+
+        if (data) {
+          // Transform database contacts to UI format
+          const transformedContacts: Contact[] = data.map((dbContact: DatabaseContact) => ({
+            id: dbContact.id,
+            name: `${dbContact.first_name || ''} ${dbContact.last_name || ''}`.trim() || 'Unknown',
+            company: '', // Not in database schema
+            role: '', // Not in database schema
+            dateAdded: dbContact.date_added || dbContact.created_at.split('T')[0],
+            source: dbContact.source || 'Unknown',
+            notes: '',
+          }));
+
+          setContacts(transformedContacts);
+
+          // Calculate monthly data for last 5 years
+          const fiveYearsAgo = new Date();
+          fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
+          fiveYearsAgo.setMonth(0, 1); // Start of January, 5 years ago
+          fiveYearsAgo.setHours(0, 0, 0, 0);
+
+          // Group contacts by month
+          const monthlyMap = new Map<string, { count: number; date: Date }>();
+
+          data.forEach((contact: DatabaseContact) => {
+            // Use date_added if available and valid, otherwise use created_at
+            let contactDate: Date;
+            if (contact.date_added) {
+              const parsedDate = new Date(contact.date_added);
+              // Check if date is valid
+              if (!isNaN(parsedDate.getTime())) {
+                contactDate = parsedDate;
+              } else {
+                contactDate = new Date(contact.created_at);
+              }
+            } else {
+              contactDate = new Date(contact.created_at);
+            }
+            
+            // Only include contacts from last 5 years
+            if (!isNaN(contactDate.getTime()) && contactDate >= fiveYearsAgo) {
+              const year = contactDate.getFullYear();
+              const month = contactDate.getMonth();
+              const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
+              
+              if (!monthlyMap.has(monthKey)) {
+                monthlyMap.set(monthKey, { count: 0, date: new Date(year, month, 1) });
+              }
+              const entry = monthlyMap.get(monthKey)!;
+              entry.count++;
+            }
+          });
+
+          // Generate all months for last 5 years (even if no contacts)
+          const allMonths: MonthlyData[] = [];
+          const currentDate = new Date();
+          const startDate = new Date(fiveYearsAgo);
+          
+          for (let date = new Date(startDate); date <= currentDate; date.setMonth(date.getMonth() + 1)) {
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
+            const monthStr = `${String(month + 1).padStart(2, '0')}-${String(year).slice(-2)}`;
+            
+            const entry = monthlyMap.get(monthKey);
+            allMonths.push({
+              month: monthStr,
+              count: entry ? entry.count : 0,
+              monthKey,
+              fullDate: new Date(year, month, 1),
+            });
+          }
+
+          // Sort by monthKey to ensure chronological order
+          allMonths.sort((a, b) => a.monthKey.localeCompare(b.monthKey));
+          setMonthlyData(allMonths);
+
+          setToastMessage('Contacts loaded successfully');
+          setShowToast(true);
+        }
+      } catch (error) {
+        console.error('Error fetching contacts:', error);
+        setToastMessage('Error loading contacts');
+        setShowToast(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchContacts();
+  }, []);
 
   // Calculate metrics
   const metrics = useMemo(() => {
-    const totalContacts = mockMonthlyData.reduce((sum, item) => sum + item.count, 0);
-    const avgPerMonth = totalContacts / mockMonthlyData.length;
-    const peakMonth = mockMonthlyData.reduce((max, item) => 
-      item.count > max.count ? item : max, mockMonthlyData[0]
+    if (monthlyData.length === 0) {
+      return {
+        totalContacts: 0,
+        avgPerMonth: '0.0',
+        peakMonth: 'N/A',
+        highActivityMonth: 'N/A',
+      };
+    }
+
+    const totalContacts = contacts.length;
+    const monthsWithData = monthlyData.filter(m => m.count > 0);
+    const avgPerMonth = monthsWithData.length > 0 
+      ? (totalContacts / monthsWithData.length).toFixed(1)
+      : '0.0';
+
+    // Find peak month (highest count)
+    const peakMonth = monthlyData.reduce((max, item) => 
+      item.count > max.count ? item : max, monthlyData[0]
     );
-    const meanVolume = avgPerMonth;
-    const highActivityMonths = mockMonthlyData.filter(item => item.count > meanVolume).length;
-    const highActivityPercent = Math.round((highActivityMonths / mockMonthlyData.length) * 100);
+    const peakMonthFormatted = peakMonth.count > 0
+      ? `${String(peakMonth.fullDate.getMonth() + 1).padStart(2, '0')}/${peakMonth.fullDate.getFullYear()}`
+      : 'N/A';
+
+    // Calculate median monthly volume
+    const counts = monthlyData
+      .filter(m => m.count > 0)
+      .map(m => m.count)
+      .sort((a, b) => a - b);
+    
+    let medianCount = 0;
+    if (counts.length > 0) {
+      const mid = Math.floor(counts.length / 2);
+      medianCount = counts.length % 2 === 0
+        ? (counts[mid - 1] + counts[mid]) / 2
+        : counts[mid];
+    }
+
+    // Find month with median volume (closest to median)
+    const highActivityMonth = monthlyData.length > 0 && medianCount > 0
+      ? monthlyData.reduce((closest, item) => {
+          const closestDiff = Math.abs(closest.count - medianCount);
+          const itemDiff = Math.abs(item.count - medianCount);
+          return itemDiff < closestDiff ? item : closest;
+        }, monthlyData[0])
+      : null;
+    
+    const highActivityMonthFormatted = highActivityMonth && highActivityMonth.count > 0
+      ? `${String(highActivityMonth.fullDate.getMonth() + 1).padStart(2, '0')}/${highActivityMonth.fullDate.getFullYear()}`
+      : 'N/A';
 
     return {
       totalContacts,
-      avgPerMonth: avgPerMonth.toFixed(1),
-      peakMonth: `${peakMonth.month} (${peakMonth.count})`,
-      highActivityPercent,
+      avgPerMonth,
+      peakMonth: peakMonthFormatted,
+      highActivityMonth: highActivityMonthFormatted,
     };
-  }, []);
+  }, [contacts, monthlyData]);
 
-  // Filter contacts
+  // Check if any filters are active
+  const hasActiveFilters = useMemo(() => {
+    return searchQuery.trim() !== '' || 
+           source !== 'All' || 
+           dateRangeStart !== '' || 
+           dateRangeEnd !== '';
+  }, [searchQuery, source, dateRangeStart, dateRangeEnd]);
+
+  // Filter contacts - only show if filters are active
   const filteredContacts = useMemo(() => {
-    return contacts.filter((contact) => {
-      const matchesSearch = contact.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesSource = source === 'All' || contact.source === source;
-      // Date filtering would go here when implemented
-      return matchesSearch && matchesSource;
-    });
-  }, [contacts, searchQuery, source]);
+    // If no filters are active, return empty array
+    if (!hasActiveFilters) {
+      return [];
+    }
 
-  const maxCount = Math.max(...mockMonthlyData.map(d => d.count));
+    return contacts.filter((contact) => {
+      const matchesSearch = searchQuery.trim() === '' || contact.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSource = source === 'All' || contact.source === source;
+      
+      // Date range filtering
+      let matchesDateRange = true;
+      if (dateRangeStart || dateRangeEnd) {
+        const contactDate = new Date(contact.dateAdded);
+        if (dateRangeStart) {
+          const startDate = new Date(dateRangeStart);
+          startDate.setHours(0, 0, 0, 0);
+          if (contactDate < startDate) {
+            matchesDateRange = false;
+          }
+        }
+        if (dateRangeEnd) {
+          const endDate = new Date(dateRangeEnd);
+          endDate.setHours(23, 59, 59, 999);
+          if (contactDate > endDate) {
+            matchesDateRange = false;
+          }
+        }
+      }
+      
+      return matchesSearch && matchesSource && matchesDateRange;
+    });
+  }, [contacts, searchQuery, source, dateRangeStart, dateRangeEnd, hasActiveFilters]);
+
+  const maxCount = monthlyData.length > 0 ? Math.max(...monthlyData.map(d => d.count), 1) : 1;
 
   const updateNote = (contactId: string, note: string) => {
     setNotes({ ...notes, [contactId]: note });
@@ -184,32 +320,48 @@ export default function ViewChroniclePage() {
             <div className="mb-2">
               <h3 className="text-sm font-medium text-gray-600">Total Contacts</h3>
             </div>
-            <p className="text-3xl font-bold text-[#305669]">{metrics.totalContacts.toLocaleString()}</p>
-            <p className="text-xs text-gray-500 mt-1">Sum across all months</p>
+            {isLoading ? (
+              <p className="text-3xl font-bold text-[#305669]">...</p>
+            ) : (
+              <p className="text-3xl font-bold text-[#305669]">{metrics.totalContacts.toLocaleString()}</p>
+            )}
+            <p className="text-xs text-gray-500 mt-1">Total unique entries</p>
           </div>
 
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
             <div className="mb-2">
               <h3 className="text-sm font-medium text-gray-600">Avg / Month</h3>
             </div>
-            <p className="text-3xl font-bold text-[#305669]">{metrics.avgPerMonth}</p>
-            <p className="text-xs text-gray-500 mt-1">Mean contacts per month</p>
+            {isLoading ? (
+              <p className="text-3xl font-bold text-[#305669]">...</p>
+            ) : (
+              <p className="text-3xl font-bold text-[#305669]">{metrics.avgPerMonth}</p>
+            )}
+            <p className="text-xs text-gray-500 mt-1">Average contacts per month</p>
           </div>
 
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
             <div className="mb-2">
               <h3 className="text-sm font-medium text-gray-600">Peak Month</h3>
             </div>
-            <p className="text-3xl font-bold text-[#305669]">{metrics.peakMonth.split(' ')[0]}</p>
-            <p className="text-xs text-gray-500 mt-1">{metrics.peakMonth.split('(')[1]?.replace(')', '')} contacts</p>
+            {isLoading ? (
+              <p className="text-3xl font-bold text-[#305669]">...</p>
+            ) : (
+              <p className="text-3xl font-bold text-[#305669]">{metrics.peakMonth}</p>
+            )}
+            <p className="text-xs text-gray-500 mt-1">Month with highest contacts</p>
           </div>
 
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
             <div className="mb-2">
-              <h3 className="text-sm font-medium text-gray-600">High-Activity Months</h3>
+              <h3 className="text-sm font-medium text-gray-600">High Activity Month</h3>
             </div>
-            <p className="text-3xl font-bold text-[#305669]">{metrics.highActivityPercent}%</p>
-            <p className="text-xs text-gray-500 mt-1">&gt; median monthly volume</p>
+            {isLoading ? (
+              <p className="text-3xl font-bold text-[#305669]">...</p>
+            ) : (
+              <p className="text-3xl font-bold text-[#305669]">{metrics.highActivityMonth}</p>
+            )}
+            <p className="text-xs text-gray-500 mt-1">Median monthly volume</p>
           </div>
         </div>
       </div>
@@ -220,25 +372,35 @@ export default function ViewChroniclePage() {
           Contacts Added by Month (Last 5 Years)
         </h2>
         <div className="overflow-x-auto">
-          <div className="flex items-end space-x-1 h-64 pb-8 border-b border-gray-200">
-            {mockMonthlyData.map((item, index) => {
-              const height = (item.count / maxCount) * 100;
-              return (
-                <div key={index} className="flex flex-col items-center flex-1 min-w-[20px]">
-                  <div
-                    className="w-full bg-[#C1785A] rounded-t hover:bg-[#b06a4a] transition-colors cursor-pointer"
-                    style={{ height: `${height}%` }}
-                    title={`${item.month}: ${item.count} contacts`}
-                  />
-                  {index % 6 === 0 && (
-                    <span className="text-xs text-gray-600 mt-2 transform -rotate-45 origin-left whitespace-nowrap">
-                      {item.month}
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+          {isLoading ? (
+            <div className="flex items-center justify-center h-64">
+              <p className="text-gray-500">Loading chart data...</p>
+            </div>
+          ) : monthlyData.length === 0 ? (
+            <div className="flex items-center justify-center h-64">
+              <p className="text-gray-500">No data available</p>
+            </div>
+          ) : (
+            <div className="flex items-end space-x-1 h-64 pb-8 border-b border-gray-200">
+              {monthlyData.map((item, index) => {
+                const height = (item.count / maxCount) * 100;
+                return (
+                  <div key={index} className="flex flex-col items-center flex-1 min-w-[20px]">
+                    <div
+                      className="w-full bg-[#C1785A] rounded-t hover:bg-[#b06a4a] transition-colors cursor-pointer"
+                      style={{ height: `${height}%` }}
+                      title={`${item.month}: ${item.count} contacts`}
+                    />
+                    {index % 6 === 0 && (
+                      <span className="text-xs text-gray-600 mt-2 transform -rotate-45 origin-left whitespace-nowrap">
+                        {item.month}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
           <div className="mt-4 flex justify-between items-center">
             <p className="text-sm text-gray-600">X-axis: Month (MM-YY)</p>
             <p className="text-sm text-gray-600">Y-axis: Number of Contacts Added</p>
@@ -249,70 +411,57 @@ export default function ViewChroniclePage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        {/* Filter Panel */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-[#305669] mb-4">
-              Filter Panel
-            </h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Date Range
-                </label>
-                <div className="space-y-2">
-                  <input
-                    type="date"
-                    value={dateRangeStart}
-                    onChange={(e) => setDateRangeStart(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9]"
-                  />
-                  <input
-                    type="date"
-                    value={dateRangeEnd}
-                    onChange={(e) => setDateRangeEnd(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9]"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Event Type
-                </label>
-                <select
-                  value={eventType}
-                  onChange={(e) => setEventType(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9]"
-                >
-                  <option>All</option>
-                  <option>Professional</option>
-                  <option>Personal</option>
-                  <option>Geographic</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Source
-                </label>
-                <select
-                  value={source}
-                  onChange={(e) => setSource(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9]"
-                >
-                  <option>All</option>
-                  <option>LinkedIn</option>
-                  <option>Google</option>
-                  <option>Facebook</option>
-                  <option>Other</option>
-                </select>
-              </div>
+      {/* Filter Panel */}
+      <div className="mb-6">
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+          <h2 className="text-xl font-semibold text-[#305669] mb-4">
+            Filter Panel
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Date Range Start
+              </label>
+              <input
+                type="date"
+                value={dateRangeStart}
+                onChange={(e) => setDateRangeStart(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9]"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Date Range End
+              </label>
+              <input
+                type="date"
+                value={dateRangeEnd}
+                onChange={(e) => setDateRangeEnd(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9]"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Source
+              </label>
+              <select
+                value={source}
+                onChange={(e) => setSource(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9]"
+              >
+                <option>All</option>
+                <option>LinkedIn</option>
+                <option>Google</option>
+                <option>Facebook</option>
+                <option>Other</option>
+              </select>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Contacts Table */}
-        <div className="lg:col-span-2">
+      {/* Contacts Table */}
+      <div className="mb-8">
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-[#305669]">
@@ -368,12 +517,23 @@ export default function ViewChroniclePage() {
                 </tbody>
               </table>
               {filteredContacts.length === 0 && (
-                <p className="text-center text-gray-500 py-8">No contacts found</p>
+                <tr>
+                  <td colSpan={6} className="text-center text-gray-500 py-8">
+                    {hasActiveFilters ? 'No contacts found matching your filters' : 'Apply filters to view contacts'}
+                  </td>
+                </tr>
               )}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Toast Notification */}
+      <Toast
+        message={toastMessage}
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+      />
     </div>
   );
 }
