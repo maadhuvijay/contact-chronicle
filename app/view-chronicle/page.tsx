@@ -509,64 +509,64 @@ export default function ViewChroniclePage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-[#305669] mb-2">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold text-[#305669] mb-1">
           View Chronicle
         </h1>
       </div>
 
       {/* Connections Dashboard */}
-      <div className="bg-[#16476A] rounded-lg p-6 mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-white">Connections Dashboard</h2>
+      <div className="bg-[#16476A] rounded-lg p-4 mb-5">
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="text-lg font-semibold text-white">Connections Dashboard</h2>
           <span className="text-xs text-gray-400">Last 5 Years</span>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-            <div className="mb-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+            <div className="mb-1">
               <h3 className="text-sm font-medium text-gray-600">Total Contacts</h3>
             </div>
             {isLoading ? (
-              <p className="text-3xl font-bold text-[#305669]">...</p>
+              <p className="text-2xl font-bold text-[#305669]">...</p>
             ) : (
-              <p className="text-3xl font-bold text-[#305669]">{metrics.totalContacts.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-[#305669]">{metrics.totalContacts.toLocaleString()}</p>
             )}
             <p className="text-xs text-gray-500 mt-1">Total unique entries</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-            <div className="mb-2">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+            <div className="mb-1">
               <h3 className="text-sm font-medium text-gray-600">Avg / Month</h3>
             </div>
             {isLoading ? (
-              <p className="text-3xl font-bold text-[#305669]">...</p>
+              <p className="text-2xl font-bold text-[#305669]">...</p>
             ) : (
-              <p className="text-3xl font-bold text-[#305669]">{metrics.avgPerMonth}</p>
+              <p className="text-2xl font-bold text-[#305669]">{metrics.avgPerMonth}</p>
             )}
             <p className="text-xs text-gray-500 mt-1">Average contacts per month</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-            <div className="mb-2">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+            <div className="mb-1">
               <h3 className="text-sm font-medium text-gray-600">Peak Month</h3>
             </div>
             {isLoading ? (
-              <p className="text-3xl font-bold text-[#305669]">...</p>
+              <p className="text-2xl font-bold text-[#305669]">...</p>
             ) : (
-              <p className="text-3xl font-bold text-[#305669]">{metrics.peakMonth}</p>
+              <p className="text-2xl font-bold text-[#305669]">{metrics.peakMonth}</p>
             )}
             <p className="text-xs text-gray-500 mt-1">Month with highest contacts</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-            <div className="mb-2">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+            <div className="mb-1">
               <h3 className="text-sm font-medium text-gray-600">High Activity Month</h3>
             </div>
             {isLoading ? (
-              <p className="text-3xl font-bold text-[#305669]">...</p>
+              <p className="text-2xl font-bold text-[#305669]">...</p>
             ) : (
-              <p className="text-3xl font-bold text-[#305669]">{metrics.highActivityMonth}</p>
+              <p className="text-2xl font-bold text-[#305669]">{metrics.highActivityMonth}</p>
             )}
             <p className="text-xs text-gray-500 mt-1">Median monthly volume</p>
           </div>
@@ -574,15 +574,15 @@ export default function ViewChroniclePage() {
       </div>
 
       {/* Chart Section */}
-      <div className="mb-8">
+      <div className="mb-5">
         <ContactsBarChart data={monthlyData} isLoading={isLoading} />
       </div>
 
       {/* Filter Panel */}
-      <div className="mb-6">
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-[#305669]">
+      <div className="mb-4">
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="text-lg font-semibold text-[#305669]">
               Filter Panel
             </h2>
             <button
@@ -592,7 +592,7 @@ export default function ViewChroniclePage() {
               Clear
             </button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Event Type
@@ -674,9 +674,9 @@ export default function ViewChroniclePage() {
           </div>
 
           {/* Contacts Table Section */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-[#305669]">
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="text-lg font-semibold text-[#305669]">
                 Contacts
               </h2>
               <div className="flex gap-2">
