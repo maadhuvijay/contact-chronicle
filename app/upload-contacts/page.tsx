@@ -5,6 +5,9 @@ import { supabase } from '@/lib/supabase';
 import Toast from '@/components/Toast';
 import { formatDateToMMYY } from '@/lib/dateUtils';
 
+// Prevent static generation since this page uses Supabase
+export const dynamic = 'force-dynamic';
+
 interface Contact {
   firstName?: string;
   lastName?: string;
