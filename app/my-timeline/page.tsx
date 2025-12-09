@@ -191,8 +191,8 @@ export default function MyTimelinePage() {
 
   const handleConfirm = async () => {
     try {
-      // Prepare data for insertion (exclude the temporary id)
-      // Filter out completely empty rows
+      // Prepare data for insertion
+      // Filter out completely empty rows (rows where all fields are empty)
       const rowsToInsert = timelineRows
         .filter((row) => {
           // Keep rows that have at least one field filled
@@ -201,12 +201,16 @@ export default function MyTimelinePage() {
                  row.personalEvent.trim() || 
                  row.geographicEvent.trim();
         })
-        .map((row) => ({
-          month_year: row.monthYear,
-          professional_event: row.professionalEvent,
-          personal_event: row.personalEvent,
-          geographic_event: row.geographicEvent,
-        }));
+        .map((row) => {
+          // Convert empty strings to null for better database handling
+          // This matches the database schema where fields can be null
+          return {
+            month_year: row.monthYear.trim() || null,
+            professional_event: row.professionalEvent.trim() || null,
+            personal_event: row.personalEvent.trim() || null,
+            geographic_event: row.geographicEvent.trim() || null,
+          };
+        });
 
       // If no valid rows to insert, show message and return
       if (rowsToInsert.length === 0) {
@@ -214,7 +218,9 @@ export default function MyTimelinePage() {
         return;
       }
 
-      // Insert all rows
+      console.log('Inserting timeline rows:', rowsToInsert);
+
+      // Insert all rows into Supabase
       const { data, error } = await supabase
         .from('timeline_rows')
         .insert(rowsToInsert)
@@ -231,6 +237,8 @@ export default function MyTimelinePage() {
         alert(`Failed to save timeline: ${error.message || 'Unknown error'}. Please check your Supabase configuration.`);
         return;
       }
+
+      console.log('Successfully saved timeline rows:', data);
 
       // After successful save, clear rows and keep only one empty row
       setTimelineRows([

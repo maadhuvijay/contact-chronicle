@@ -11,16 +11,9 @@ function getSupabaseClient(): SupabaseClient | null {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  // If env vars are missing, only throw error in browser (runtime), not during build
+  // If env vars are missing, return null to indicate client is not available
+  // The Proxy will handle this gracefully by returning no-ops that provide error messages
   if (!supabaseUrl || !supabaseAnonKey) {
-    // Only throw error at runtime (in browser), not during build/SSR
-    if (typeof window !== 'undefined') {
-      throw new Error(
-        'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your .env.local file.'
-      );
-    }
-    // During build/SSR, return null to indicate client is not available
-    // The Proxy will handle this gracefully
     return null;
   }
 
@@ -28,10 +21,17 @@ function getSupabaseClient(): SupabaseClient | null {
   return supabaseClient;
 }
 
-// Helper to create a no-op query builder for build time
+// Helper to create a no-op query builder when Supabase is not configured
 function createNoOpQueryBuilder() {
+  const errorMessage = 'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your environment variables.';
   return new Proxy({}, {
-    get: () => () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
+    get: () => () => Promise.resolve({ 
+      data: null, 
+      error: { 
+        message: errorMessage,
+        code: 'ENV_VARS_MISSING'
+      } 
+    }),
   });
 }
 
@@ -49,7 +49,14 @@ export const supabase = new Proxy({} as SupabaseClient, {
         return createNoOpQueryBuilder;
       }
       // Return no-op for other methods
-      return () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } });
+      const errorMessage = 'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your environment variables.';
+      return () => Promise.resolve({ 
+        data: null, 
+        error: { 
+          message: errorMessage,
+          code: 'ENV_VARS_MISSING'
+        } 
+      });
     }
     
     const value = (client as any)[prop];
@@ -76,10 +83,17 @@ export const supabase = new Proxy({} as SupabaseClient, {
     const client = getSupabaseClient();
     if (!client) {
       // Return a descriptor that allows the property to exist during build
+      const errorMessage = 'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your environment variables.';
       return {
         enumerable: true,
         configurable: true,
-        value: prop === 'from' ? createNoOpQueryBuilder : () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
+        value: prop === 'from' ? createNoOpQueryBuilder : () => Promise.resolve({ 
+          data: null, 
+          error: { 
+            message: errorMessage,
+            code: 'ENV_VARS_MISSING'
+          } 
+        }),
       };
     }
     return Object.getOwnPropertyDescriptor(client, prop);
