@@ -1030,29 +1030,97 @@ Updating the code to alternate events across all years, not just within each yea
 
 ---
 
-<tool-use data-tool-type="unknown" data-tool-name="search_replace">
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: components/VerticalTimeline.tsx</summary>
+
+**Chunk 1**
+Lines added: 8, lines removed: undefined
+
+```diff
+@@ -149,4 +149,12 @@
+      );
+    }
++ 
++   // Calculate total events before each year for global indexing
++   let globalEventIndex = 0;
++   const eventsBeforeYear: Record&lt;number, number&gt; = {};
++   sortedYears.forEach((year) =&gt; {
++     eventsBeforeYear[year] = globalEventIndex;
++     globalEventIndex += eventsByYear[year].length;
++   });
+  
+    return (
+```
+
+**Chunk 2**
+Lines added: 3, lines removed: 1
+
+```diff
+@@ -194,5 +202,7 @@
+                &lt;div className="relative space-y-16 md:space-y-20"&gt;
+                  {yearEvents.map((event, eventIndex) =&gt; {
+-                   const isLeft = eventIndex % 2 === 0;
++                   // Calculate global index for proper alternation across all years
++                   const globalIndex = eventsBeforeYear[year] + eventIndex;
++                   const isLeft = globalIndex % 2 === 0;
+                    const monthColor = getMonthColor(event.month);
+                    const itemId = &#96;${year}-${event.month}-${event.id}&#96;;
+```
+
+</details>
+
+</tool-use>
+
+---
+
+
+
+---
+
+
+Verifying the layout structure for proper alternating display:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: components/VerticalTimeline.tsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
 <details>
-<summary>Tool use: **search_replace**</summary>
+          <summary>Tool use: **read_lints** • Read lints for 1 file</summary>
+      
+Lint paths:
+
+- `components/VerticalTimeline.tsx`
+
+Lint results
 
 
-Parameters:
+**No lint errors found**
+</details>
+</tool-use>
 
-```json
-{
-  "relativeWorkspacePath": "components/VerticalTimeline.tsx"
-}
-```
-Additional data:
+---
 
-```json
-{
-  "codeblockId": "27ec85a1-aec1-4d9c-bf66-797566a5697c"
-}
-```
-User decision: **accepted**
 
-Status: **loading**
 
+---
+
+
+Checking the spacer element to ensure proper layout:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: components/VerticalTimeline.tsx</summary>
 
 </details>
 </tool-use>
@@ -1060,6 +1128,91 @@ Status: **loading**
 ---
 
 
+
+---
+
+
+
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: components/VerticalTimeline.tsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Fixing redundant flex-row classes:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: components/VerticalTimeline.tsx</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -219,5 +219,5 @@
+                          }
+                        }}
+-                       className={&#96;relative flex flex-col md:flex-row items-center ${
++                       className={&#96;relative flex flex-col items-center ${
+                          isLeft ? 'md:flex-row' : 'md:flex-row-reverse'
+                        }&#96;}
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
+<details>
+          <summary>Tool use: **read_lints** • Read lints for 1 file</summary>
+      
+Lint paths:
+
+- `components/VerticalTimeline.tsx`
+
+Lint results
+
+
+**No lint errors found**
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Updated the timeline to alternate events across all years, not just within each year.
+
+## Changes Made:
+
+1. **Global event indexing**: Calculates a global index across all years so alternation continues across year boundaries.
+
+2. **Proper alternation logic**: Uses the global index to determine left/right positioning:
+   - Even indices (0, 2, 4...) → left side
+   - Odd indices (1, 3, 5...) → right side
+
+3. **Fixed redundant CSS class**: Removed the duplicate `md:flex-row` class.
+
+Events now alternate left-right across all years, creating a continuous zigzag pattern. The timeline marker stays centered on the vertical line, with content cards on alternating sides.
 
 ---
 
