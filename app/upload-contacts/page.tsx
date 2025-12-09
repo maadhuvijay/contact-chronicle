@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import Toast from '@/components/Toast';
-import { formatDateToMMYY } from '@/lib/dateUtils';
+import { formatDateToFull } from '@/lib/dateUtils';
 
 // Prevent static generation since this page uses Supabase
 export const dynamic = 'force-dynamic';
@@ -275,7 +275,7 @@ export default function UploadContactsPage() {
                       <td className="py-2 px-4 text-sm border border-[#456882]">{contact.email || '-'}</td>
                       <td className="py-2 px-4 text-sm border border-[#456882]">{contact.phone || '-'}</td>
                       <td className="py-2 px-4 text-sm border border-[#456882]">{contact.linkedIn || '-'}</td>
-                      <td className="py-2 px-4 text-sm border border-[#456882]">{contact.dateAdded ? formatDateToMMYY(contact.dateAdded) : '-'}</td>
+                      <td className="py-2 px-4 text-sm border border-[#456882]">{contact.dateAdded ? formatDateToFull(contact.dateAdded) : '-'}</td>
                       <td className="py-2 px-4 text-sm border border-[#456882]">{contact.source || '-'}</td>
                     </tr>
                   ))}
