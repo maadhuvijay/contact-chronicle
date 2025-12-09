@@ -81,7 +81,7 @@ export default function VerticalTimeline({ events, onEdit, onDelete }: VerticalT
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close menu when clicking outside
-  useClickOutside(menuRef, () => {
+  useClickOutside<HTMLDivElement>(menuRef, () => {
     if (selectedEventId) {
       setSelectedEventId(null);
     }
