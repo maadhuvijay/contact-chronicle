@@ -956,36 +956,207 @@ Updating error handling to be more user-friendly and adding a check to verify en
 
 ---
 
-<tool-use data-tool-type="unknown" data-tool-name="search_replace">
-<details>
-<summary>Tool use: **search_replace**</summary>
+<tool-use data-tool-type="write" data-tool-name="search_replace">
 
+<details><summary>Tool use: **search_replace** • Edit file: lib/supabase.ts</summary>
 
-Parameters:
+**Chunk 1**
+Lines added: 24, lines removed: 7
 
-```json
-{
-  "relativeWorkspacePath": "lib/supabase.ts"
-}
+```diff
+@@ -9,25 +9,42 @@
+    }
+  
++   // In Next.js, NEXT_PUBLIC_ variables are embedded at build time
++   // They should be available both on server and client
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
+  
+-   // If env vars are missing, throw a clear error
++   // If env vars are missing, throw a clear error with helpful instructions
+    if (!supabaseUrl || !supabaseAnonKey) {
+-     const errorMessage = 'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY in your environment variables.';
+-     console.error('Supabase initialization error:', {
++     const errorDetails = {
+        hasUrl: !!supabaseUrl,
+        hasKey: !!supabaseAnonKey,
+-       url: supabaseUrl,
+-       keyPrefix: supabaseAnonKey ? supabaseAnonKey.substring(0, 10) + '...' : 'missing'
+-     });
++       url: supabaseUrl || 'NOT SET',
++       keyPrefix: supabaseAnonKey ? supabaseAnonKey.substring(0, 10) + '...' : 'NOT SET',
++       allEnvVars: typeof window !== 'undefined' 
++         ? 'Client-side: Check browser console for env vars'
++         : 'Server-side: Check build-time environment variables'
++     };
++     
++     console.error('Supabase initialization error - Environment variables missing:', errorDetails);
++     console.error('Required variables:');
++     console.error('  - NEXT_PUBLIC_SUPABASE_URL');
++     console.error('  - NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY');
++     console.error('');
++     console.error('To fix this:');
++     console.error('  1. Set these variables in your deployment platform (Vercel, etc.)');
++     console.error('  2. Rebuild and redeploy your application');
++     console.error('  3. For local development, create a .env.local file with these variables');
++     
++     const errorMessage = &#96;Missing Supabase environment variables. Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY are set in your deployment platform and rebuild the application.&#96;;
+      throw new Error(errorMessage);
+    }
+  
+    try {
+      supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
++     console.log('Supabase client initialized successfully');
+      return supabaseClient;
+    } catch (error) {
+      console.error('Error creating Supabase client:', error);
+-     throw error;
++     throw new Error(&#96;Failed to initialize Supabase client: ${error instanceof Error ? error.message : 'Unknown error'}&#96;);
+    }
+  }
 ```
-Additional data:
 
-```json
-{
-  "codeblockId": "2c07fa9f-fd57-4ecf-b39f-2853c81b6604"
-}
-```
-User decision: **accepted**
+</details>
 
-Status: **loading**
+</tool-use>
 
+---
+
+
+
+---
+
+
+Updating error handling in the timeline page to show a clearer message:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: app/my-timeline/page.tsx</summary>
 
 </details>
 </tool-use>
 
 ---
 
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
+<details>
+          <summary>Tool use: **read_lints** • Read lints for 1 file</summary>
+      
+Lint paths:
 
+- `lib/supabase.ts`
+
+Lint results
+
+
+**No lint errors found**
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Creating a simple utility to verify environment variables are accessible. The main issue is that in Next.js, `NEXT_PUBLIC_` environment variables must be set at build time. If they're set after deployment, the app needs to be rebuilt.
+
+Adding a helper to diagnose this:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="write">
+
+<details><summary>Tool use: **write** • Edit file: lib/env-check.ts</summary>
+
+**Chunk 1**
+Lines added: 36, lines removed: 1
+
+```diff
+@@ -1,1 +1,36 @@
+- 
++ /**
++  * Utility to check if Supabase environment variables are properly configured
++  * This can be used for debugging environment variable issues
++  */
++ export function checkSupabaseEnv(): {
++   isValid: boolean;
++   hasUrl: boolean;
++   hasKey: boolean;
++   message: string;
++ } {
++   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
++   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
++ 
++   const hasUrl = !!supabaseUrl;
++   const hasKey = !!supabaseAnonKey;
++   const isValid = hasUrl &amp;&amp; hasKey;
++ 
++   let message = '';
++   if (!isValid) {
++     const missing: string[] = [];
++     if (!hasUrl) missing.push('NEXT_PUBLIC_SUPABASE_URL');
++     if (!hasKey) missing.push('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY');
++     message = &#96;Missing environment variables: ${missing.join(', ')}. &#96;;
++     message += 'Please set these in your deployment platform (Vercel, etc.) and rebuild the application.';
++   } else {
++     message = 'Supabase environment variables are configured correctly.';
++   }
++ 
++   return {
++     isValid,
++     hasUrl,
++     hasKey,
++     message,
++   };
++ }
++ 
+```
+
+</details>
+
+</tool-use>
+
+---
+
+
+
+---
+
+
+## The Problem
+
+The error indicates that the Supabase environment variables aren't accessible in production. In Next.js, `NEXT_PUBLIC_` variables are embedded at build time, so if they're set after deployment, the app must be rebuilt.
+
+## Solution
+
+1. Set the environment variables in your deployment platform (e.g., Vercel):
+   - Go to your project settings → Environment Variables
+   - Add:
+     - `NEXT_PUBLIC_SUPABASE_URL` = `https://jytxketcqtozzonosvsv.supabase.co`
+     - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY` = `sb_publishable_TWHDJkMdKqKOqN95OC4GDw_i6k5c7wd`
+
+2. Rebuild and redeploy:
+   - After setting the variables, trigger a new deployment
+   - On Vercel: Settings → Environment Variables → Redeploy
+
+3. Verify:
+   - Check the browser console for the "Supabase client initialized successfully" message
+   - If you see errors about missing variables, the rebuild may not have picked them up
+
+## What I've Updated
+
+1. Improved error messages with clearer instructions
+2. Added logging to help diagnose the issue
+3. Created an environment check utility
+
+The code will now provide clearer error messages if the variables are missing. After setting the variables and rebuilding, the Supabase client should initialize correctly.
+
+If the error persists after rebuilding, share the console output and we can investigate further.
 
 ---
 
