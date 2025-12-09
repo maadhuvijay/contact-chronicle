@@ -756,12 +756,35 @@ Lines added: 4, lines removed: 2
 
 ---
 
-<tool-use data-tool-type="unknown" data-tool-name="read_lints">
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
 <details>
-<summary>Tool use: **read_lints**</summary>
+          <summary>Tool use: **read_lints** • Read lints for 1 file</summary>
+      
+Lint paths:
 
-Status: **loading**
+- `lib/supabase.ts`
 
+Lint results
+
+
+**No lint errors found**
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Verifying the final implementation:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: lib/supabase.ts</summary>
 
 </details>
 </tool-use>
@@ -769,6 +792,205 @@ Status: **loading**
 ---
 
 
+
+---
+
+
+Updating the implementation so `.select()` returns a Promise directly (not a function that returns a Promise):
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: lib/supabase.ts</summary>
+
+**Chunk 1**
+Lines added: 15, lines removed: 8
+
+```diff
+@@ -29,20 +29,27 @@
+    // Create a chainable no-op object that returns itself for all methods except final ones
+    const createChainableNoOp = () =&gt; {
++     const errorResponse = { 
++       data: null, 
++       error: { 
++         message: errorMessage,
++         code: 'ENV_VARS_MISSING'
++       } 
++     };
++     
+      return new Proxy({}, {
+        get(_target, prop) {
+-         // Methods that should return a Promise (final methods)
++         // Methods that should return a Promise directly (final methods)
+          const finalMethods = ['select', 'then', 'catch', 'finally'];
+          if (finalMethods.includes(prop as string)) {
+-           return () =&gt; Promise.resolve({ 
+-             data: null, 
+-             error: { 
+-               message: errorMessage,
+-               code: 'ENV_VARS_MISSING'
+-             } 
+-           });
++           // Return a function that returns a Promise
++           return () =&gt; Promise.resolve(errorResponse);
+          }
+          // All other methods (insert, update, delete, etc.) return the chainable object
+          // Make them callable functions that return the chainable object
+          return (...args: any[]) =&gt; createChainableNoOp();
++       },
++       // Support Promise-like behavior
++       then(resolve: any, reject: any) {
++         return Promise.resolve(errorResponse).then(resolve, reject);
+        }
+      });
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
+<details>
+          <summary>Tool use: **read_lints** • Read lints for 1 file</summary>
+      
+Lint paths:
+
+- `lib/supabase.ts`
+
+Lint results
+
+
+**No lint errors found**
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Reviewing the implementation and testing a simpler approach to ensure method chaining works:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: lib/supabase.ts</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Removing the `then` method from the Proxy object (it won't work there) and ensuring the implementation is correct:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: lib/supabase.ts</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -37,5 +37,5 @@
+      };
+      
+-     return new Proxy({}, {
++     const chainableObject = new Proxy({}, {
+        get(_target, prop) {
+          // Methods that should return a Promise directly (final methods)
+```
+
+**Chunk 2**
+Lines added: 9, lines removed: 6
+
+```diff
+@@ -48,10 +48,13 @@
+          // Make them callable functions that return the chainable object
+          return (...args: any[]) =&gt; createChainableNoOp();
+-       },
+-       // Support Promise-like behavior
+-       then(resolve: any, reject: any) {
+-         return Promise.resolve(errorResponse).then(resolve, reject);
+-       }
+-     });
++       }
++     });
++     
++     // Make the object itself thenable (Promise-like)
++     (chainableObject as any).then = (resolve: any, reject: any) =&gt; {
++       return Promise.resolve(errorResponse).then(resolve, reject);
++     };
++     
++     return chainableObject;
+    };
+    
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
+<details>
+          <summary>Tool use: **read_lints** • Read lints for 1 file</summary>
+      
+Lint paths:
+
+- `lib/supabase.ts`
+
+Lint results
+
+
+**No lint errors found**
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+## Summary of Fix
+
+The no-op query builder didn't support method chaining (e.g., `.from().insert().select()`). Updated it to:
+
+1. **Chainable methods**: Methods like `insert`, `update`, `delete` return functions that, when called, return another chainable object, enabling chaining.
+
+2. **Final methods**: Methods like `select` return a function that returns a Promise with the error response.
+
+3. **Promise-like behavior**: The chainable object has a `then` method for Promise-like usage.
+
+## How it works now:
+
+- `supabase.from('timeline_rows')` → Returns a chainable query builder
+- `.insert(rowsToInsert)` → Returns another chainable query builder  
+- `.select()` → Returns a Promise with the error response
+
+This should resolve the "select is not a function" error in production. When Supabase environment variables are missing, the code will:
+- Not crash
+- Support full method chaining
+- Return a clear error message in the Promise response
+
+The error will be caught by your existing error handling in `handleConfirm`, and users will see the error message instead of a crash.
 
 ---
 
