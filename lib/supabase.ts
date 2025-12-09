@@ -8,27 +8,44 @@ function getSupabaseClient(): SupabaseClient {
     return supabaseClient;
   }
 
+  // In Next.js, NEXT_PUBLIC_ variables are embedded at build time
+  // They should be available both on server and client
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
 
-  // If env vars are missing, throw a clear error
+  // If env vars are missing, throw a clear error with helpful instructions
   if (!supabaseUrl || !supabaseAnonKey) {
-    const errorMessage = 'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY in your environment variables.';
-    console.error('Supabase initialization error:', {
+    const errorDetails = {
       hasUrl: !!supabaseUrl,
       hasKey: !!supabaseAnonKey,
-      url: supabaseUrl,
-      keyPrefix: supabaseAnonKey ? supabaseAnonKey.substring(0, 10) + '...' : 'missing'
-    });
+      url: supabaseUrl || 'NOT SET',
+      keyPrefix: supabaseAnonKey ? supabaseAnonKey.substring(0, 10) + '...' : 'NOT SET',
+      allEnvVars: typeof window !== 'undefined' 
+        ? 'Client-side: Check browser console for env vars'
+        : 'Server-side: Check build-time environment variables'
+    };
+    
+    console.error('Supabase initialization error - Environment variables missing:', errorDetails);
+    console.error('Required variables:');
+    console.error('  - NEXT_PUBLIC_SUPABASE_URL');
+    console.error('  - NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY');
+    console.error('');
+    console.error('To fix this:');
+    console.error('  1. Set these variables in your deployment platform (Vercel, etc.)');
+    console.error('  2. Rebuild and redeploy your application');
+    console.error('  3. For local development, create a .env.local file with these variables');
+    
+    const errorMessage = `Missing Supabase environment variables. Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY are set in your deployment platform and rebuild the application.`;
     throw new Error(errorMessage);
   }
 
   try {
     supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+    console.log('Supabase client initialized successfully');
     return supabaseClient;
   } catch (error) {
     console.error('Error creating Supabase client:', error);
-    throw error;
+    throw new Error(`Failed to initialize Supabase client: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
