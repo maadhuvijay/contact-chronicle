@@ -487,26 +487,278 @@ Improving `handleConfirm` to ensure all row data is saved correctly. Converting 
 
 ---
 
-<tool-use data-tool-type="unknown" data-tool-name="search_replace">
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: app/my-timeline/page.tsx</summary>
+
+**Chunk 1**
+Lines added: 2, lines removed: 2
+
+```diff
+@@ -192,6 +192,6 @@
+    const handleConfirm = async () =&gt; {
+      try {
+-       // Prepare data for insertion (exclude the temporary id)
+-       // Filter out completely empty rows
++       // Prepare data for insertion
++       // Filter out completely empty rows (rows where all fields are empty)
+        const rowsToInsert = timelineRows
+          .filter((row) =&gt; {
+```
+
+**Chunk 2**
+Lines added: 10, lines removed: 6
+
+```diff
+@@ -202,10 +202,14 @@
+                   row.geographicEvent.trim();
+          })
+-         .map((row) =&gt; ({
+-           month_year: row.monthYear,
+-           professional_event: row.professionalEvent,
+-           personal_event: row.personalEvent,
+-           geographic_event: row.geographicEvent,
+-         }));
++         .map((row) =&gt; {
++           // Convert empty strings to null for better database handling
++           // This matches the database schema where fields can be null
++           return {
++             month_year: row.monthYear.trim() || null,
++             professional_event: row.professionalEvent.trim() || null,
++             personal_event: row.personalEvent.trim() || null,
++             geographic_event: row.geographicEvent.trim() || null,
++           };
++         });
+  
+        // If no valid rows to insert, show message and return
+```
+
+**Chunk 3**
+Lines added: 3, lines removed: 1
+
+```diff
+@@ -215,5 +219,7 @@
+        }
+  
+-       // Insert all rows
++       console.log('Inserting timeline rows:', rowsToInsert);
++ 
++       // Insert all rows into Supabase
+        const { data, error } = await supabase
+          .from('timeline_rows')
+```
+
+**Chunk 4**
+Lines added: 2, lines removed: undefined
+
+```diff
+@@ -232,4 +238,6 @@
+          return;
+        }
++ 
++       console.log('Successfully saved timeline rows:', data);
+  
+        // After successful save, clear rows and keep only one empty row
+```
+
+</details>
+
+</tool-use>
+
+---
+
+
+
+---
+
+
+
+
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
 <details>
-<summary>Tool use: **search_replace**</summary>
+          <summary>Tool use: **read_lints** • Read lints for 1 file</summary>
+      
+Lint paths:
+
+- `app/my-timeline/page.tsx`
+
+Lint results
 
 
-Parameters:
+**No lint errors found**
+</details>
+</tool-use>
 
-```json
-{
-  "relativeWorkspacePath": "app/my-timeline/page.tsx"
-}
+---
+
+
+
+---
+
+
+## Changes Made:
+
+1. **Empty string to null conversion**: Converts empty strings to `null` to match the database schema (`string | null`).
+
+2. **Debug logging**: Added console logs to track:
+   - What data is being inserted
+   - Success confirmation
+   - Any errors that occur
+
+3. **Data handling**: Ensures all rows with at least one filled field are saved.
+
+## How it works:
+
+1. Filters rows: keeps rows with at least one non-empty field (monthYear, professionalEvent, personalEvent, or geographicEvent).
+2. Transforms data: maps to database format and converts empty strings to `null`.
+3. Bulk insert: inserts all valid rows in a single Supabase operation.
+4. Success handling: clears the form, shows a success toast, and refreshes the timeline view if open.
+
+When you click "Confirm Timeline", all rows with data are saved to the `timeline_rows` table in Supabase. Empty rows (all fields empty) are skipped.
+
+If issues persist, check the browser console for the debug logs to see what's being sent to Supabase.
+
+---
+
+_**User (2025-12-08 16:17Z)**_
+
+getting error An unexpected error occurred: s.supabase.from(...).insert(...).select is not a function. Please try again. in production
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+The no-op query builder doesn't handle method chaining (e.g., `.insert().select()`). Fixing it to support chained calls:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: lib/supabase.ts</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Fixing the no-op query builder to support method chaining (e.g., `.insert().select()`):
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: lib/supabase.ts</summary>
+
+**Chunk 1**
+Lines added: 24, lines removed: 9
+
+```diff
+@@ -23,15 +23,30 @@
+  
+  // Helper to create a no-op query builder when Supabase is not configured
++ // This supports method chaining like .from().insert().select()
+  function createNoOpQueryBuilder() {
+    const errorMessage = 'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your environment variables.';
+-   return new Proxy({}, {
+-     get: () =&gt; () =&gt; Promise.resolve({ 
+-       data: null, 
+-       error: { 
+-         message: errorMessage,
+-         code: 'ENV_VARS_MISSING'
+-       } 
+-     }),
+-   });
++   
++   // Create a chainable no-op object that returns itself for all methods except final ones
++   const createChainableNoOp = () =&gt; {
++     return new Proxy({}, {
++       get(_target, prop) {
++         // Methods that should return a Promise (final methods)
++         const finalMethods = ['select', 'then', 'catch', 'finally'];
++         if (finalMethods.includes(prop as string)) {
++           return () =&gt; Promise.resolve({ 
++             data: null, 
++             error: { 
++               message: errorMessage,
++               code: 'ENV_VARS_MISSING'
++             } 
++           });
++         }
++         // All other methods (insert, update, delete, etc.) return the chainable object
++         return createChainableNoOp;
++       }
++     });
++   };
++   
++   return createChainableNoOp();
+  }
+  
 ```
-Additional data:
 
-```json
-{
-  "codeblockId": "9e823c34-8859-481e-b044-1732c01376fa"
-}
+</details>
+
+</tool-use>
+
+---
+
+
+
+---
+
+
+Updating the function to accept arguments (like table name) and still return the chainable object:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: lib/supabase.ts</summary>
+
+**Chunk 1**
+Lines added: 4, lines removed: 2
+
+```diff
+@@ -43,10 +43,12 @@
+          }
+          // All other methods (insert, update, delete, etc.) return the chainable object
+-         return createChainableNoOp;
++         // Make them callable functions that return the chainable object
++         return (...args: any[]) =&gt; createChainableNoOp();
+        }
+      });
+    };
+    
+-   return createChainableNoOp();
++   // Return a function that accepts table name and returns the chainable object
++   return (...args: any[]) =&gt; createChainableNoOp();
+  }
+  
 ```
-User decision: **accepted**
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_lints">
+<details>
+<summary>Tool use: **read_lints**</summary>
 
 Status: **loading**
 

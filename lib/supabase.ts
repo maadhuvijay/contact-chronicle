@@ -22,17 +22,44 @@ function getSupabaseClient(): SupabaseClient | null {
 }
 
 // Helper to create a no-op query builder when Supabase is not configured
+// This supports method chaining like .from().insert().select()
 function createNoOpQueryBuilder() {
   const errorMessage = 'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your environment variables.';
-  return new Proxy({}, {
-    get: () => () => Promise.resolve({ 
+  
+  // Create a chainable no-op object that returns itself for all methods except final ones
+  const createChainableNoOp = () => {
+    const errorResponse = { 
       data: null, 
       error: { 
         message: errorMessage,
         code: 'ENV_VARS_MISSING'
       } 
-    }),
-  });
+    };
+    
+    const chainableObject = new Proxy({}, {
+      get(_target, prop) {
+        // Methods that should return a Promise directly (final methods)
+        const finalMethods = ['select', 'then', 'catch', 'finally'];
+        if (finalMethods.includes(prop as string)) {
+          // Return a function that returns a Promise
+          return () => Promise.resolve(errorResponse);
+        }
+        // All other methods (insert, update, delete, etc.) return the chainable object
+        // Make them callable functions that return the chainable object
+        return (...args: any[]) => createChainableNoOp();
+      }
+    });
+    
+    // Make the object itself thenable (Promise-like)
+    (chainableObject as any).then = (resolve: any, reject: any) => {
+      return Promise.resolve(errorResponse).then(resolve, reject);
+    };
+    
+    return chainableObject;
+  };
+  
+  // Return a function that accepts table name and returns the chainable object
+  return (...args: any[]) => createChainableNoOp();
 }
 
 // Export a Proxy that lazily initializes the Supabase client
