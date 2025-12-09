@@ -9,7 +9,7 @@ function getSupabaseClient(): SupabaseClient | null {
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
 
   // If env vars are missing, return null to indicate client is not available
   // The Proxy will handle this gracefully by returning no-ops that provide error messages
@@ -24,7 +24,7 @@ function getSupabaseClient(): SupabaseClient | null {
 // Helper to create a no-op query builder when Supabase is not configured
 // This supports method chaining like .from().insert().select()
 function createNoOpQueryBuilder() {
-  const errorMessage = 'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your environment variables.';
+  const errorMessage = 'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY in your environment variables.';
   
   // Create a chainable no-op object that returns itself for all methods except final ones
   const createChainableNoOp = () => {
@@ -76,7 +76,7 @@ export const supabase = new Proxy({} as SupabaseClient, {
         return createNoOpQueryBuilder;
       }
       // Return no-op for other methods
-      const errorMessage = 'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your environment variables.';
+      const errorMessage = 'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY in your environment variables.';
       return () => Promise.resolve({ 
         data: null, 
         error: { 
@@ -110,7 +110,7 @@ export const supabase = new Proxy({} as SupabaseClient, {
     const client = getSupabaseClient();
     if (!client) {
       // Return a descriptor that allows the property to exist during build
-      const errorMessage = 'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your environment variables.';
+      const errorMessage = 'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY in your environment variables.';
       return {
         enumerable: true,
         configurable: true,
