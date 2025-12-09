@@ -298,3 +298,17 @@ The application should now work with your production Supabase configuration.
 
 ---
 
+_**User (2025-12-08 16:17Z)**_
+
+still getting the error: An unexpected error occurred: s.supabase.from(...).insert is not a function. Please try again.
+
+when clicking confirm timeline in production
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
