@@ -241,7 +241,6 @@ export default function UploadContactsPage() {
             <div>• Phone Number</div>
             <div>• LinkedIn Profile</div>
             <div>• Date Added</div>
-            <div>• Date Edited</div>
             <div>• Source (LinkedIn, Google, etc.)</div>
           </div>
         </div>
