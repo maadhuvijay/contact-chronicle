@@ -2,6 +2,26 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+// Hook to detect clicks outside element
+function useClickOutside(ref: React.RefObject<HTMLElement>, handler: () => void) {
+  useEffect(() => {
+    const listener = (event: MouseEvent | TouchEvent) => {
+      if (!ref.current || ref.current.contains(event.target as Node)) {
+        return;
+      }
+      handler();
+    };
+
+    document.addEventListener('mousedown', listener);
+    document.addEventListener('touchstart', listener);
+
+    return () => {
+      document.removeEventListener('mousedown', listener);
+      document.removeEventListener('touchstart', listener);
+    };
+  }, [ref, handler]);
+}
+
 export interface TimelineEvent {
   id: string;
   year: number;
@@ -10,10 +30,13 @@ export interface TimelineEvent {
   eventDescription: string;
   highlight?: boolean;
   eventType?: 'Professional' | 'Personal' | 'Geographic';
+  rowId?: string; // Database row ID
 }
 
 interface VerticalTimelineProps {
   events: TimelineEvent[];
+  onEdit?: (event: TimelineEvent) => void;
+  onDelete?: (event: TimelineEvent) => void;
 }
 
 // Month color palette (1-12)
@@ -48,9 +71,18 @@ const MONTH_NAMES = [
   'DECEMBER',
 ];
 
-export default function VerticalTimeline({ events }: VerticalTimelineProps) {
+export default function VerticalTimeline({ events, onEdit, onDelete }: VerticalTimelineProps) {
   const [visibleItems, setVisibleItems] = useState<Set<string>>(new Set());
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside
+  useClickOutside(menuRef, () => {
+    if (selectedEventId) {
+      setSelectedEventId(null);
+    }
+  });
 
   // Sort events by year and month
   const sortedEvents = [...events].sort((a, b) => {
@@ -234,7 +266,50 @@ export default function VerticalTimeline({ events }: VerticalTimelineProps) {
                           isLeft ? 'md:pr-8 md:text-right' : 'md:pl-8 md:text-left'
                         } order-2 md:order-1 text-left`}
                       >
-                        <div className="bg-white rounded-lg p-4 md:p-6 shadow-sm border border-gray-200">
+                        <div 
+                          className={`bg-white rounded-lg p-4 md:p-6 shadow-sm border border-gray-200 relative cursor-pointer hover:shadow-md transition-shadow ${
+                            selectedEventId === event.id ? 'ring-2 ring-[#305669]' : ''
+                          }`}
+                          onClick={() => {
+                            if (onEdit || onDelete) {
+                              setSelectedEventId(selectedEventId === event.id ? null : event.id);
+                            }
+                          }}
+                        >
+                          {/* Edit/Delete Menu */}
+                          {selectedEventId === event.id && (onEdit || onDelete) && (
+                            <div 
+                              ref={menuRef}
+                              className={`absolute top-2 ${isLeft ? 'left-2' : 'right-2'} z-20 bg-white rounded-lg shadow-lg border border-gray-200 p-2 min-w-[120px]`}
+                            >
+                              {onEdit && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onEdit(event);
+                                    setSelectedEventId(null);
+                                  }}
+                                  className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                                >
+                                  ✏️ Edit
+                                </button>
+                              )}
+                              {onDelete && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (confirm('Are you sure you want to delete this event?')) {
+                                      onDelete(event);
+                                      setSelectedEventId(null);
+                                    }
+                                  }}
+                                  className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                                >
+                                  🗑️ Delete
+                                </button>
+                              )}
+                            </div>
+                          )}
                           {/* Month Name */}
                           <div className={`mb-3 text-left ${isLeft ? 'md:text-right' : 'md:text-left'}`}>
                             <div className={`text-xs md:text-base font-medium text-gray-600 uppercase tracking-wider flex items-center gap-2 ${isLeft ? 'md:justify-end' : ''}`}>

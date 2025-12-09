@@ -36,6 +36,11 @@ export default function MyTimelinePage() {
   const [savedTimelineRows, setSavedTimelineRows] = useState<TimelineRow[]>([]);
   const [isLoadingTimeline, setIsLoadingTimeline] = useState(false);
   const [hasSavedEntries, setHasSavedEntries] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<TimelineEvent | null>(null);
+  const [editMonth, setEditMonth] = useState('');
+  const [editYear, setEditYear] = useState('');
+  const [editEventText, setEditEventText] = useState('');
+  const [toastMessage, setToastMessage] = useState('');
 
   const addRow = () => {
     const newRow: TimelineRow = {
@@ -191,6 +196,175 @@ export default function MyTimelinePage() {
     setShowTimelineView(!showTimelineView);
   };
 
+  // Handle edit event
+  const handleEditEvent = (event: TimelineEvent) => {
+    setEditingEvent(event);
+    setEditMonth(String(event.month).padStart(2, '0'));
+    setEditYear(String(event.year));
+    setEditEventText(event.eventDescription);
+  };
+
+  // Handle save edited event
+  const handleSaveEdit = async () => {
+    if (!editingEvent || !editingEvent.rowId) {
+      return;
+    }
+
+    // Validate inputs
+    const monthNum = parseInt(editMonth);
+    const yearNum = parseInt(editYear);
+    
+    if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
+      alert('Please enter a valid month (1-12)');
+      return;
+    }
+
+    if (isNaN(yearNum) || yearNum < 1900 || yearNum > 2100) {
+      alert('Please enter a valid year');
+      return;
+    }
+
+    if (!editEventText.trim()) {
+      alert('Please enter event text');
+      return;
+    }
+
+    if (!isSupabaseConfigured()) {
+      alert(getSupabaseConfigError() || 'Supabase is not configured. Please contact the administrator.');
+      return;
+    }
+
+    try {
+      // Get the current row from database
+      const { data: currentRow, error: fetchError } = await supabase
+        .from('timeline_rows')
+        .select('*')
+        .eq('id', editingEvent.rowId)
+        .single();
+
+      if (fetchError) {
+        throw fetchError;
+      }
+
+      if (!currentRow) {
+        throw new Error('Row not found');
+      }
+
+      // Prepare update data
+      const monthYear = `${editMonth}/${editYear}`;
+      const updateData: Partial<DatabaseTimelineRow> = {
+        month_year: monthYear,
+      };
+
+      // Update the specific event field based on event type
+      if (editingEvent.eventType === 'Professional') {
+        updateData.professional_event = editEventText.trim() || null;
+      } else if (editingEvent.eventType === 'Personal') {
+        updateData.personal_event = editEventText.trim() || null;
+      } else if (editingEvent.eventType === 'Geographic') {
+        updateData.geographic_event = editEventText.trim() || null;
+      }
+
+      // Update the row in database
+      const { error: updateError } = await supabase
+        .from('timeline_rows')
+        .update(updateData)
+        .eq('id', editingEvent.rowId);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      // Refresh timeline data
+      await fetchTimelineRows();
+      setEditingEvent(null);
+      setEditMonth('');
+      setEditYear('');
+      setEditEventText('');
+      setToastMessage('Event updated successfully');
+      setShowToast(true);
+    } catch (error) {
+      console.error('Error updating event:', error);
+      alert(`Failed to update event: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  // Handle delete event
+  const handleDeleteEvent = async (event: TimelineEvent) => {
+    if (!event.rowId) {
+      return;
+    }
+
+    if (!isSupabaseConfigured()) {
+      alert(getSupabaseConfigError() || 'Supabase is not configured. Please contact the administrator.');
+      return;
+    }
+
+    try {
+      // Get the current row from database
+      const { data: currentRow, error: fetchError } = await supabase
+        .from('timeline_rows')
+        .select('*')
+        .eq('id', event.rowId)
+        .single();
+
+      if (fetchError) {
+        throw fetchError;
+      }
+
+      if (!currentRow) {
+        throw new Error('Row not found');
+      }
+
+      // Determine which field to clear based on event type
+      const updateData: Partial<DatabaseTimelineRow> = {};
+
+      if (event.eventType === 'Professional') {
+        updateData.professional_event = null;
+      } else if (event.eventType === 'Personal') {
+        updateData.personal_event = null;
+      } else if (event.eventType === 'Geographic') {
+        updateData.geographic_event = null;
+      }
+
+      // Check if all event fields are empty or will be empty after this deletion
+      const willBeEmpty = 
+        (event.eventType === 'Professional' || !currentRow.professional_event) &&
+        (event.eventType === 'Personal' || !currentRow.personal_event) &&
+        (event.eventType === 'Geographic' || !currentRow.geographic_event);
+
+      if (willBeEmpty) {
+        // Delete the entire row if no events remain
+        const { error: deleteError } = await supabase
+          .from('timeline_rows')
+          .delete()
+          .eq('id', event.rowId);
+
+        if (deleteError) {
+          throw deleteError;
+        }
+      } else {
+        // Just clear the specific event field
+        const { error: updateError } = await supabase
+          .from('timeline_rows')
+          .update(updateData)
+          .eq('id', event.rowId);
+
+        if (updateError) {
+          throw updateError;
+        }
+      }
+
+      // Refresh timeline data
+      await fetchTimelineRows();
+      setToastMessage('Event deleted successfully');
+      setShowToast(true);
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      alert(`Failed to delete event: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
   // Initialize page with single empty row and check for saved entries
   useEffect(() => {
     // Always start with one empty row for new entries
@@ -293,7 +467,7 @@ export default function MyTimelinePage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <Toast
-        message="Timeline saved"
+        message={toastMessage || "Timeline saved"}
         isVisible={showToast}
         onClose={() => setShowToast(false)}
       />
@@ -416,8 +590,95 @@ export default function MyTimelinePage() {
                 <p className="text-gray-600">No timeline entries found. Add some entries and save them to see your timeline.</p>
               </div>
             ) : (
-              <TimelineVisualization rows={savedTimelineRows} />
+              <TimelineVisualization 
+                rows={savedTimelineRows} 
+                onEdit={handleEditEvent}
+                onDelete={handleDeleteEvent}
+              />
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Edit Event Modal */}
+      {editingEvent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h2 className="text-2xl font-bold text-[#305669] mb-4">Edit Event</h2>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Month
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="12"
+                value={editMonth}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || (parseInt(value) >= 1 && parseInt(value) <= 12)) {
+                    setEditMonth(value);
+                  }
+                }}
+                onBlur={(e) => {
+                  const value = e.target.value;
+                  if (value && parseInt(value) >= 1 && parseInt(value) <= 12) {
+                    setEditMonth(String(parseInt(value)).padStart(2, '0'));
+                  }
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9]"
+                placeholder="01"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Year
+              </label>
+              <input
+                type="number"
+                min="1900"
+                max="2100"
+                value={editYear}
+                onChange={(e) => setEditYear(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9]"
+                placeholder="2024"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Event Text ({editingEvent.eventType})
+              </label>
+              <textarea
+                value={editEventText}
+                onChange={(e) => setEditEventText(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] resize-none"
+                rows={4}
+                placeholder="Enter event description..."
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setEditingEvent(null);
+                  setEditMonth('');
+                  setEditYear('');
+                  setEditEventText('');
+                }}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                className="px-4 py-2 bg-[#BDE8CA] text-gray-700 rounded-md hover:bg-[#a8d4b5] transition-colors font-semibold"
+              >
+                Save
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -426,7 +687,15 @@ export default function MyTimelinePage() {
 }
 
 // Timeline Visualization Component - Transforms TimelineRow data to VerticalTimeline format
-function TimelineVisualization({ rows }: { rows: TimelineRow[] }) {
+function TimelineVisualization({ 
+  rows, 
+  onEdit, 
+  onDelete 
+}: { 
+  rows: TimelineRow[];
+  onEdit?: (event: TimelineEvent) => void;
+  onDelete?: (event: TimelineEvent) => void;
+}) {
   // Parse month_year string (MM/YYYY or YYYY format) to extract year and month
   const parseMonthYear = (monthYear: string): { year: number; month: number } | null => {
     if (!monthYear || !monthYear.trim()) {
@@ -486,6 +755,7 @@ function TimelineVisualization({ rows }: { rows: TimelineRow[] }) {
           eventDescription: row.professionalEvent.trim(),
           highlight: hasAllEvents, // Highlight if all three events exist
           eventType: 'Professional',
+          rowId: row.id,
         });
       }
 
@@ -499,6 +769,7 @@ function TimelineVisualization({ rows }: { rows: TimelineRow[] }) {
           eventDescription: row.personalEvent.trim(),
           highlight: false,
           eventType: 'Personal',
+          rowId: row.id,
         });
       }
 
@@ -512,6 +783,7 @@ function TimelineVisualization({ rows }: { rows: TimelineRow[] }) {
           eventDescription: row.geographicEvent.trim(),
           highlight: false,
           eventType: 'Geographic',
+          rowId: row.id,
         });
       }
     });
@@ -529,6 +801,6 @@ function TimelineVisualization({ rows }: { rows: TimelineRow[] }) {
     );
   }
 
-  return <VerticalTimeline events={timelineEvents} />;
+  return <VerticalTimeline events={timelineEvents} onEdit={onEdit} onDelete={onDelete} />;
 }
 
