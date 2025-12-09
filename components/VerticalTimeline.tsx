@@ -267,7 +267,7 @@ export default function VerticalTimeline({ events, onEdit, onDelete }: VerticalT
                         } order-2 md:order-1 text-left`}
                       >
                         <div 
-                          className={`bg-white rounded-lg p-4 md:p-6 shadow-sm border border-gray-200 relative cursor-pointer hover:shadow-md transition-shadow ${
+                          className={`bg-white rounded-lg p-4 md:p-6 shadow-sm border border-gray-200 relative cursor-pointer hover:shadow-md transition-shadow group ${
                             selectedEventId === event.id ? 'ring-2 ring-[#305669]' : ''
                           }`}
                           onClick={() => {
@@ -275,7 +275,17 @@ export default function VerticalTimeline({ events, onEdit, onDelete }: VerticalT
                               setSelectedEventId(selectedEventId === event.id ? null : event.id);
                             }
                           }}
+                          title={onEdit || onDelete ? "Click to make changes" : undefined}
                         >
+                          {/* Hover tooltip */}
+                          {(onEdit || onDelete) && (
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-800 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-30">
+                              Click to make changes
+                              <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                                <div className="border-4 border-transparent border-t-gray-800"></div>
+                              </div>
+                            </div>
+                          )}
                           {/* Edit/Delete Menu */}
                           {selectedEventId === event.id && (onEdit || onDelete) && (
                             <div 

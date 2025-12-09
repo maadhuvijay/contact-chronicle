@@ -2235,3 +2235,100 @@ Users can click any event box in the timeline view to edit or delete it, and all
 
 ---
 
+_**User (2025-12-09 21:43Z)**_
+
+When I hover over the box, there should be a message saying "Click to make changes"
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Adding a hover tooltip "Click to make changes" to the event boxes:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: components/VerticalTimeline.tsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: components/VerticalTimeline.tsx</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -268,5 +268,5 @@
+                        &gt;
+                          &lt;div 
+-                           className={&#96;bg-white rounded-lg p-4 md:p-6 shadow-sm border border-gray-200 relative cursor-pointer hover:shadow-md transition-shadow ${
++                           className={&#96;bg-white rounded-lg p-4 md:p-6 shadow-sm border border-gray-200 relative cursor-pointer hover:shadow-md transition-shadow group ${
+                              selectedEventId === event.id ? 'ring-2 ring-[#305669]' : ''
+                            }&#96;}
+```
+
+**Chunk 2**
+Lines added: 11, lines removed: 1
+
+```diff
+@@ -276,5 +276,15 @@
+                              }
+                            }}
+-                         &gt;
++                           title={onEdit || onDelete ? "Click to make changes" : undefined}
++                         &gt;
++                           {/* Hover tooltip */}
++                           {(onEdit || onDelete) &amp;&amp; (
++                             &lt;div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-800 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-30"&gt;
++                               Click to make changes
++                               &lt;div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1"&gt;
++                                 &lt;div className="border-4 border-transparent border-t-gray-800"&gt;&lt;/div&gt;
++                               &lt;/div&gt;
++                             &lt;/div&gt;
++                           )}
+                            {/* Edit/Delete Menu */}
+                            {selectedEventId === event.id &amp;&amp; (onEdit || onDelete) &amp;&amp; (
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
+<details>
+          <summary>Tool use: **read_lints** • Read lints for 1 file</summary>
+      
+Lint paths:
+
+- `components/VerticalTimeline.tsx`
+
+Lint results
+
+
+**No lint errors found**
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+
+---
+
