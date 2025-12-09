@@ -48,8 +48,8 @@ export default function ContactsBarChart({ data, isLoading = false }: ContactsBa
 
   if (isLoading) {
     return (
-      <div className="bg-[#0f1115] border border-gray-700 rounded-xl p-6 text-white shadow-lg">
-        <div className="flex items-center justify-center h-64">
+      <div className="bg-[#0f1115] border border-gray-700 rounded-xl p-4 text-white shadow-lg">
+        <div className="flex items-center justify-center h-48">
           <p className="text-gray-400">Loading chart data...</p>
         </div>
       </div>
@@ -58,8 +58,8 @@ export default function ContactsBarChart({ data, isLoading = false }: ContactsBa
 
   if (data.length === 0) {
     return (
-      <div className="bg-[#0f1115] border border-gray-700 rounded-xl p-6 text-white shadow-lg">
-        <div className="flex items-center justify-center h-64">
+      <div className="bg-[#0f1115] border border-gray-700 rounded-xl p-4 text-white shadow-lg">
+        <div className="flex items-center justify-center h-48">
           <p className="text-gray-400">No data available</p>
         </div>
       </div>
@@ -67,27 +67,27 @@ export default function ContactsBarChart({ data, isLoading = false }: ContactsBa
   }
 
   return (
-    <div className="bg-[#0f1115] border border-gray-700 rounded-xl p-6 text-white shadow-lg w-full">
+    <div className="bg-[#0f1115] border border-gray-700 rounded-xl p-4 text-white shadow-lg w-full">
       {/* Title */}
-      <h2 className="text-xl font-bold text-white text-center mb-2">
+      <h2 className="text-lg font-bold text-white text-center mb-1">
         Contacts Added by Month (5 Years)
       </h2>
       
       {/* Subtitle */}
-      <p className="text-sm text-gray-300 text-center mb-6">
+      <p className="text-xs text-gray-300 text-center mb-4">
         Bars show monthly additions, cycles indicate bursts vs. lulls.
       </p>
 
       {/* Chart */}
-      <div className="w-full" style={{ height: '400px' }}>
+      <div className="w-full" style={{ height: '320px' }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={chartData}
             margin={{
-              top: 20,
-              right: 30,
-              left: 20,
-              bottom: 80,
+              top: 15,
+              right: 20,
+              left: 15,
+              bottom: 70,
             }}
           >
             <CartesianGrid 
@@ -99,23 +99,23 @@ export default function ContactsBarChart({ data, isLoading = false }: ContactsBa
               dataKey="month"
               angle={-45}
               textAnchor="end"
-              height={80}
-              tick={{ fill: '#9ca3af', fontSize: 11 }}
+              height={70}
+              tick={{ fill: '#9ca3af', fontSize: 10 }}
               label={{ 
                 value: 'Month (MM-YY)', 
                 position: 'insideBottom', 
                 offset: -5,
-                style: { textAnchor: 'middle', fill: '#d1d5db', fontSize: 12 }
+                style: { textAnchor: 'middle', fill: '#d1d5db', fontSize: 11 }
               }}
               interval={data.length > 60 ? Math.floor(data.length / 12) : 5} // Show approximately 12 labels for large datasets
             />
             <YAxis
-              tick={{ fill: '#9ca3af', fontSize: 12 }}
+              tick={{ fill: '#9ca3af', fontSize: 11 }}
               label={{ 
                 value: 'Number of Contacts Added', 
                 angle: -90, 
                 position: 'insideLeft',
-                style: { textAnchor: 'middle', fill: '#d1d5db', fontSize: 12 }
+                style: { textAnchor: 'middle', fill: '#d1d5db', fontSize: 11 }
               }}
               allowDecimals={false}
             />
