@@ -117,3 +117,80 @@ Fixing the type mismatch: `useClickOutside` expects `RefObject<HTMLElement>`, bu
 
 ---
 
+
+Fixing the type mismatch by explicitly specifying the generic type when calling the hook:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: components/VerticalTimeline.tsx</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -82,5 +82,5 @@
+  
+    // Close menu when clicking outside
+-   useClickOutside(menuRef, () =&gt; {
++   useClickOutside&lt;HTMLDivElement&gt;(menuRef, () =&gt; {
+      if (selectedEventId) {
+        setSelectedEventId(null);
+```
+
+</details>
+
+</tool-use>
+
+---
+
+
+
+---
+
+
+Checking for remaining TypeScript errors:
+
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
+<details>
+          <summary>Tool use: **read_lints** • Read lints for 1 file</summary>
+      
+Lint paths:
+
+- `components/VerticalTimeline.tsx`
+
+Lint results
+
+
+**No lint errors found**
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Fixed the TypeScript error. The issue was that TypeScript wasn't inferring the generic type for `useClickOutside`. By explicitly specifying `<HTMLDivElement>` when calling the hook, it now correctly recognizes that `menuRef` (of type `RefObject<HTMLDivElement | null>`) is compatible with the hook's expected parameter type.
+
+The fix changes:
+```typescript
+useClickOutside(menuRef, () => {
+```
+
+to:
+```typescript
+useClickOutside<HTMLDivElement>(menuRef, () => {
+```
+
+This tells TypeScript that `HTMLDivElement` extends `HTMLElement`, so the ref type is compatible. The build should now succeed.
+
+---
+
