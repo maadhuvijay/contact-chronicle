@@ -15,6 +15,7 @@ interface Contact {
   name: string;
   email: string;
   phone: string;
+  linkedin: string;
   dateAdded: string;
   source: string;
   notes: string;
@@ -91,6 +92,7 @@ export default function ViewChroniclePage() {
             name: `${dbContact.first_name || ''} ${dbContact.last_name || ''}`.trim() || 'Unknown',
             email: dbContact.email || '',
             phone: dbContact.phone || '',
+            linkedin: dbContact.linkedin || '',
             dateAdded: dbContact.date_added || dbContact.created_at.split('T')[0],
             source: dbContact.source || 'Unknown',
             notes: '',
@@ -473,7 +475,7 @@ export default function ViewChroniclePage() {
 
   const exportToCSV = () => {
     // CSV headers
-    const headers = ['Name', 'Email', 'Phone', 'Date Added', 'Source', 'Notes'];
+    const headers = ['Name', 'Email', 'Phone', 'LinkedIn Profile', 'Date Added', 'Source', 'Notes'];
     
     // Convert contacts to CSV rows
     const csvRows = [
@@ -483,6 +485,7 @@ export default function ViewChroniclePage() {
           `"${contact.name.replace(/"/g, '""')}"`,
           `"${contact.email.replace(/"/g, '""')}"`,
           `"${contact.phone.replace(/"/g, '""')}"`,
+          `"${contact.linkedin.replace(/"/g, '""')}"`,
           `"${formatDateToFull(contact.dateAdded).replace(/"/g, '""')}"`,
           `"${contact.source.replace(/"/g, '""')}"`,
           `"${(notes[contact.id] || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
@@ -665,10 +668,7 @@ export default function ViewChroniclePage() {
                 <option>Google</option>
                 <option>Facebook</option>
                 <option>Twitter</option>
-                <option>Instagram</option>
-                <option>Email</option>
-                <option>Phone</option>
-                <option>Other</option>
+                <option>Referral</option>
               </select>
             </div>
           </div>
@@ -702,6 +702,7 @@ export default function ViewChroniclePage() {
                     <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Name</th>
                     <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Email</th>
                     <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Phone</th>
+                    <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">LinkedIn Profile</th>
                     <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Date Added</th>
                     <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Source</th>
                     <th className="text-left py-3 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Notes</th>
@@ -710,7 +711,7 @@ export default function ViewChroniclePage() {
                 <tbody>
                   {filteredContacts.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="text-center text-gray-500 py-8">
+                      <td colSpan={7} className="text-center text-gray-500 py-8">
                         {selectedEvent !== 'All' ? 'No contacts found matching your filters' : 'Select an event to view contacts'}
                       </td>
                     </tr>
@@ -720,6 +721,20 @@ export default function ViewChroniclePage() {
                         <td className="py-3 px-4 text-sm border border-[#456882]">{contact.name}</td>
                         <td className="py-3 px-4 text-sm border border-[#456882]">{contact.email || '-'}</td>
                         <td className="py-3 px-4 text-sm border border-[#456882]">{contact.phone || '-'}</td>
+                        <td className="py-3 px-4 text-sm border border-[#456882]">
+                          {contact.linkedin ? (
+                            <a 
+                              href={contact.linkedin.startsWith('http') ? contact.linkedin : `https://${contact.linkedin}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[#305669] hover:text-[#8ABEB9] underline"
+                            >
+                              {contact.linkedin}
+                            </a>
+                          ) : (
+                            '-'
+                          )}
+                        </td>
                         <td className="py-3 px-4 text-sm border border-[#456882]">{formatDateToFull(contact.dateAdded)}</td>
                         <td className="py-3 px-4 text-sm border border-[#456882]">{contact.source}</td>
                         <td className="py-3 px-4 border border-[#456882]">
