@@ -265,7 +265,6 @@ export default function UploadContactsPage() {
                     <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Phone Number</th>
                     <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">LinkedIn Profile</th>
                     <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Date added</th>
-                    <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Date Edited</th>
                     <th className="text-left py-2 px-4 font-semibold text-[#305669] text-sm border border-[#456882]">Source</th>
                   </tr>
                 </thead>
@@ -278,7 +277,6 @@ export default function UploadContactsPage() {
                       <td className="py-2 px-4 text-sm border border-[#456882]">{contact.phone || '-'}</td>
                       <td className="py-2 px-4 text-sm border border-[#456882]">{contact.linkedIn || '-'}</td>
                       <td className="py-2 px-4 text-sm border border-[#456882]">{contact.dateAdded ? formatDateToMMYY(contact.dateAdded) : '-'}</td>
-                      <td className="py-2 px-4 text-sm border border-[#456882]">{contact.dateEdited ? formatDateToMMYY(contact.dateEdited) : '-'}</td>
                       <td className="py-2 px-4 text-sm border border-[#456882]">{contact.source || '-'}</td>
                     </tr>
                   ))}
