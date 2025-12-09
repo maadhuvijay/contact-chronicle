@@ -9,6 +9,7 @@ export interface TimelineEvent {
   eventTitle: string;
   eventDescription: string;
   highlight?: boolean;
+  eventType?: 'Professional' | 'Personal' | 'Geographic';
 }
 
 interface VerticalTimelineProps {
@@ -110,8 +111,34 @@ export default function VerticalTimeline({ events }: VerticalTimelineProps) {
     return MONTH_COLORS[month] || '#00B6FF';
   };
 
-  const formatMonthNumber = (month: number): string => {
-    return String(month).padStart(2, '0');
+  const getEventTypeSymbol = (eventType?: string, eventTitle?: string): string => {
+    // First try eventType if provided
+    if (eventType) {
+      switch (eventType) {
+        case 'Personal':
+          return '❤️';
+        case 'Professional':
+          return '💼';
+        case 'Geographic':
+          return '📍';
+        default:
+          break;
+      }
+    }
+    
+    // Fallback: try to determine from eventTitle
+    if (eventTitle) {
+      const titleLower = eventTitle.toLowerCase();
+      if (titleLower.includes('personal')) {
+        return '❤️';
+      } else if (titleLower.includes('professional')) {
+        return '💼';
+      } else if (titleLower.includes('geographic')) {
+        return '📍';
+      }
+    }
+    
+    return '';
   };
 
   if (sortedEvents.length === 0) {
@@ -121,6 +148,14 @@ export default function VerticalTimeline({ events }: VerticalTimelineProps) {
       </div>
     );
   }
+
+  // Calculate total events before each year for global indexing
+  let globalEventIndex = 0;
+  const eventsBeforeYear: Record<number, number> = {};
+  sortedYears.forEach((year) => {
+    eventsBeforeYear[year] = globalEventIndex;
+    globalEventIndex += eventsByYear[year].length;
+  });
 
   return (
     <div className="w-full py-8">
@@ -166,10 +201,13 @@ export default function VerticalTimeline({ events }: VerticalTimelineProps) {
               {/* Timeline Events */}
               <div className="relative space-y-16 md:space-y-20">
                 {yearEvents.map((event, eventIndex) => {
-                  const isLeft = eventIndex % 2 === 0;
+                  // Calculate global index for proper alternation across all years
+                  const globalIndex = eventsBeforeYear[year] + eventIndex;
+                  const isLeft = globalIndex % 2 === 0;
                   const monthColor = getMonthColor(event.month);
                   const itemId = `${year}-${event.month}-${event.id}`;
                   const isVisible = visibleItems.has(itemId);
+                  const eventSymbol = getEventTypeSymbol(event.eventType, event.eventTitle);
 
                   return (
                     <div
@@ -180,7 +218,7 @@ export default function VerticalTimeline({ events }: VerticalTimelineProps) {
                           itemRefs.current.set(itemId, el);
                         }
                       }}
-                      className={`relative flex flex-col md:flex-row items-center ${
+                      className={`relative flex flex-col items-center ${
                         isLeft ? 'md:flex-row' : 'md:flex-row-reverse'
                       }`}
                       style={{
@@ -197,13 +235,13 @@ export default function VerticalTimeline({ events }: VerticalTimelineProps) {
                         } order-2 md:order-1 text-left`}
                       >
                         <div className="bg-white rounded-lg p-4 md:p-6 shadow-sm border border-gray-200">
-                          {/* Month Number and Name */}
+                          {/* Month Name */}
                           <div className={`mb-3 text-left ${isLeft ? 'md:text-right' : 'md:text-left'}`}>
-                            <div className="text-3xl md:text-5xl font-bold text-gray-800 mb-1">
-                              {formatMonthNumber(event.month)}
-                            </div>
-                            <div className="text-xs md:text-base font-medium text-gray-600 uppercase tracking-wider">
-                              {MONTH_NAMES[event.month - 1]}
+                            <div className={`text-xs md:text-base font-medium text-gray-600 uppercase tracking-wider flex items-center gap-2 ${isLeft ? 'md:justify-end' : ''}`}>
+                              <span>{MONTH_NAMES[event.month - 1]}</span>
+                              {eventSymbol && (
+                                <span className="text-sm">{eventSymbol}</span>
+                              )}
                             </div>
                           </div>
 

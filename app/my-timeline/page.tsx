@@ -485,6 +485,7 @@ function TimelineVisualization({ rows }: { rows: TimelineRow[] }) {
           eventTitle: 'Professional Event',
           eventDescription: row.professionalEvent.trim(),
           highlight: hasAllEvents, // Highlight if all three events exist
+          eventType: 'Professional',
         });
       }
 
@@ -497,6 +498,7 @@ function TimelineVisualization({ rows }: { rows: TimelineRow[] }) {
           eventTitle: 'Personal Event',
           eventDescription: row.personalEvent.trim(),
           highlight: false,
+          eventType: 'Personal',
         });
       }
 
@@ -509,6 +511,7 @@ function TimelineVisualization({ rows }: { rows: TimelineRow[] }) {
           eventTitle: 'Geographic Event',
           eventDescription: row.geographicEvent.trim(),
           highlight: false,
+          eventType: 'Geographic',
         });
       }
     });
