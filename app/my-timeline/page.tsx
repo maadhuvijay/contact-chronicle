@@ -281,28 +281,28 @@ export default function MyTimelinePage() {
         </p>
       </div>
 
-      <div className="bg-white rounded-lg border border-[#896C6C] shadow-sm p-6">
+      <div className="bg-[#16476A] rounded-lg border border-gray-200 shadow-sm p-6">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[#896C6C]">
-                <th className="text-left py-3 px-4 font-semibold text-[#305669]">Month / Year</th>
-                <th className="text-left py-3 px-4 font-semibold text-[#305669]">Key Professional Event</th>
-                <th className="text-left py-3 px-4 font-semibold text-[#305669]">Key Personal Event</th>
-                <th className="text-left py-3 px-4 font-semibold text-[#305669]">Key Geographic Event</th>
-                <th className="text-left py-3 px-4 font-semibold text-[#305669]">Actions</th>
+              <tr className="border-b border-gray-400">
+                <th className="text-left py-3 px-4 font-semibold text-white">Month / Year</th>
+                <th className="text-left py-3 px-4 font-semibold text-white">Key Professional Event</th>
+                <th className="text-left py-3 px-4 font-semibold text-white">Key Personal Event</th>
+                <th className="text-left py-3 px-4 font-semibold text-white">Key Geographic Event</th>
+                <th className="text-left py-3 px-4 font-semibold text-white">Actions</th>
               </tr>
             </thead>
             <tbody>
               {timelineRows.map((row) => (
-                <tr key={row.id} className="border-b border-[#896C6C] hover:bg-gray-50">
+                <tr key={row.id} className="border-b border-gray-400 hover:bg-[#1e5a7a]">
                   <td className="py-3 px-4">
                     <input
                       type="text"
                       placeholder="09-25"
                       value={row.monthYear}
                       onChange={(e) => updateRow(row.id, 'monthYear', e.target.value)}
-                      className="w-full px-3 py-2 border border-[#896C6C] rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] focus:border-transparent"
                     />
                   </td>
                   <td className="py-3 px-4">
@@ -311,7 +311,7 @@ export default function MyTimelinePage() {
                       placeholder="e.g. Started Work at IBM"
                       value={row.professionalEvent}
                       onChange={(e) => updateRow(row.id, 'professionalEvent', e.target.value)}
-                      className="w-full px-3 py-2 border border-[#896C6C] rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] focus:border-transparent"
                     />
                   </td>
                   <td className="py-3 px-4">
@@ -320,7 +320,7 @@ export default function MyTimelinePage() {
                       placeholder="e.g. Had a baby"
                       value={row.personalEvent}
                       onChange={(e) => updateRow(row.id, 'personalEvent', e.target.value)}
-                      className="w-full px-3 py-2 border border-[#896C6C] rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] focus:border-transparent"
                     />
                   </td>
                   <td className="py-3 px-4">
@@ -329,14 +329,14 @@ export default function MyTimelinePage() {
                       placeholder="e.g. Moved to Newark"
                       value={row.geographicEvent}
                       onChange={(e) => updateRow(row.id, 'geographicEvent', e.target.value)}
-                      className="w-full px-3 py-2 border border-[#896C6C] rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8ABEB9] focus:border-transparent"
                     />
                   </td>
                   <td className="py-3 px-4">
                     <button
                       onClick={() => deleteRow(row.id)}
                       disabled={timelineRows.length === 1}
-                      className="px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                      className="px-3 py-1 bg-gray-100 text-red-600 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                     >
                       Delete
                     </button>
@@ -350,17 +350,17 @@ export default function MyTimelinePage() {
         <div className="mt-6 flex flex-wrap gap-3">
           <button
             onClick={addRow}
-            className="px-4 py-2 bg-[#8ABEB9] text-white rounded-md hover:bg-[#7aada8] transition-colors"
+            className="px-4 py-2 bg-[#BDE8CA] text-gray-700 rounded-md hover:bg-[#a8d4b5] transition-colors"
           >
             Add Row
           </button>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-[#896C6C]">
+        <div className="mt-8 pt-6 border-t border-gray-400">
           <div className="flex gap-4 flex-wrap">
             <button
               onClick={handleConfirm}
-              className="px-6 py-3 bg-[#305669] text-white rounded-md hover:bg-[#244a5a] transition-colors font-semibold"
+              className="px-6 py-3 bg-[#BDE8CA] text-gray-700 rounded-md hover:bg-[#a8d4b5] transition-colors font-semibold"
             >
               Confirm Timeline
             </button>
@@ -368,7 +368,7 @@ export default function MyTimelinePage() {
               <button
                 onClick={handleViewTimeline}
                 disabled={isLoadingTimeline}
-                className="px-6 py-3 bg-[#8ABEB9] text-white rounded-md hover:bg-[#7aada8] transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-3 bg-[#BDE8CA] text-gray-700 rounded-md hover:bg-[#a8d4b5] transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoadingTimeline ? 'Loading...' : showTimelineView ? 'Hide Timeline' : 'View Timeline'}
               </button>

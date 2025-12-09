@@ -26,7 +26,7 @@ export default function Navigation() {
                 height={40}
                 className="mr-3"
               />
-              <span className="text-lg sm:text-xl font-semibold text-[#210F37]">Contact Chronicle</span>
+              <span className="text-xl sm:text-2xl font-semibold text-[#210F37]">Contact Chronicle</span>
             </Link>
           </div>
           <div className="flex flex-wrap gap-1 sm:gap-1 justify-center sm:justify-end">

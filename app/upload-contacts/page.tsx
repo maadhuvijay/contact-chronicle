@@ -191,7 +191,7 @@ export default function UploadContactsPage() {
 
       <div className="space-y-6">
         {/* Drag and Drop Area */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <div className="bg-white rounded-lg border border-[#697565] shadow-sm p-6">
           <div
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -199,7 +199,7 @@ export default function UploadContactsPage() {
             className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${
               isDragging
                 ? 'border-[#8ABEB9] bg-[#B7E5CD]'
-                : 'border-gray-300 bg-gray-50'
+                : 'border-[#697565] bg-gray-50'
             }`}
           >
             <input
@@ -230,7 +230,7 @@ export default function UploadContactsPage() {
         </div>
 
         {/* Expected Columns Info */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <div className="bg-white rounded-lg border border-[#697565] shadow-sm p-6">
           <h2 className="text-lg font-semibold text-[#305669] mb-4">
             Expected Columns:
           </h2>

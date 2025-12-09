@@ -587,7 +587,7 @@ export default function ViewChroniclePage() {
             </h2>
             <button
               onClick={clearAllFilters}
-              className="px-4 py-2 bg-[#FAEAB1] text-gray-700 rounded-md hover:bg-[#f5e09a] transition-colors font-semibold text-sm whitespace-nowrap"
+              className="px-4 py-2 bg-[#BDE8CA] text-gray-700 rounded-md hover:bg-[#a8d4b5] transition-colors font-semibold text-sm whitespace-nowrap"
             >
               Clear
             </button>
@@ -689,7 +689,7 @@ export default function ViewChroniclePage() {
                 />
                 <button
                   onClick={exportToCSV}
-                  className="px-4 py-2 bg-[#FAEAB1] text-gray-700 rounded-md hover:bg-[#f5e09a] transition-colors font-semibold text-sm whitespace-nowrap"
+                  className="px-4 py-2 bg-[#BDE8CA] text-gray-700 rounded-md hover:bg-[#a8d4b5] transition-colors font-semibold text-sm whitespace-nowrap"
                 >
                   Export CSV
                 </button>
