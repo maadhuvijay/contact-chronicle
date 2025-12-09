@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured, getSupabaseConfigError } from '@/lib/supabase';
 import Toast from '@/components/Toast';
 import VerticalTimeline, { TimelineEvent } from '@/components/VerticalTimeline';
 
@@ -84,6 +84,10 @@ export default function MyTimelinePage() {
 
   // Check if there are saved entries in the database
   const checkForSavedEntries = async () => {
+    if (!isSupabaseConfigured()) {
+      return;
+    }
+    
     try {
       const { data, error } = await supabase
         .from('timeline_rows')
@@ -134,6 +138,12 @@ export default function MyTimelinePage() {
 
   // Fetch all timeline rows from Supabase
   const fetchTimelineRows = async () => {
+    if (!isSupabaseConfigured()) {
+      setIsLoadingTimeline(false);
+      alert(getSupabaseConfigError() || 'Supabase is not configured. Please contact the administrator.');
+      return;
+    }
+    
     setIsLoadingTimeline(true);
     try {
       const { data, error } = await supabase
@@ -190,6 +200,13 @@ export default function MyTimelinePage() {
   }, []);
 
   const handleConfirm = async () => {
+    // Check if Supabase is configured before proceeding
+    if (!isSupabaseConfigured()) {
+      const errorMsg = getSupabaseConfigError();
+      alert(errorMsg || 'Supabase is not configured. Please contact the administrator.');
+      return;
+    }
+
     try {
       // Prepare data for insertion
       // Filter out completely empty rows (rows where all fields are empty)

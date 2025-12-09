@@ -2,6 +2,34 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 let supabaseClient: SupabaseClient | null = null;
 
+/**
+ * Check if Supabase environment variables are configured
+ * This can be called before using Supabase to provide better error messages
+ */
+export function isSupabaseConfigured(): boolean {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
+  return !!(supabaseUrl && supabaseAnonKey);
+}
+
+/**
+ * Get a user-friendly error message if Supabase is not configured
+ */
+export function getSupabaseConfigError(): string | null {
+  if (isSupabaseConfigured()) {
+    return null;
+  }
+  
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
+  
+  const missing: string[] = [];
+  if (!supabaseUrl) missing.push('NEXT_PUBLIC_SUPABASE_URL');
+  if (!supabaseAnonKey) missing.push('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY');
+  
+  return `Missing Supabase environment variables: ${missing.join(', ')}. Please ensure these are set in your deployment platform (Vercel, Netlify, etc.) and rebuild the application.`;
+}
+
 function getSupabaseClient(): SupabaseClient {
   // Return existing client if already created
   if (supabaseClient) {
